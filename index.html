@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物件マップ</title>
+
+    <!-- iPhone / Android アイコン対応 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./logo_512x512.png">
+    <link rel="icon" href="./logo_512x512.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- PWA対応マニフェスト（未使用だが今後の拡張に備え） -->
+    <!-- <link rel="manifest" href="./manifest.json"> -->
+
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+      }
+      #map {
+        height: calc(100vh - 70px);
+        width: 100%;
+      }
+      .info-window {
+        font-size: 1.8rem;
+        line-height: 2.2;
+        max-width: 320px;
+        padding: 12px;
+      }
+      .info-window strong {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .info-window a {
+        font-size: 1.8rem;
+        color: #1a73e8;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 6px;
+      }
+      .info-window a:hover {
+        text-decoration: underline;
+      }
+      .info-window em {
+        font-size: 1.6rem;
+        color: #666;
+        display: block;
+        margin-top: 6px;
+      }
+      select {
+        font-size: 1.4rem;
+        padding: 6px;
+        width: 100%;
+        max-width: 300px;
+      }
+      label {
+        font-size: 1.4rem;
+        display: block;
+        margin-bottom: 5px;
+      }
+    </style>
+
+    <script>
+      let map;
+      let allMarkers = [];
+
+      function initMap() {
+        fetch("./data.json")
+          .then(response => response.json())
+          .then(locations => displayMarkers(locations));
+      }
+
+      function displayMarkers(locations) {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: 26.2124, lng: 127.6809 },
+          zoom: 10
+        });
+
+        const colors = {
+          "土地": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+          "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          "マンション": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+          "その他": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+        };
+
+        allMarkers = [];
+
+        locations.forEach(loc => {
+          const iconUrl = colors[loc.sheet] || colors["その他"];
+
+          const marker = new google.maps.Marker({
+            position: { lat: loc.lat, lng: loc.lng },
+            map: map,
+            title: loc.name,
+            icon: {
+              url: iconUrl,
+              scaledSize: new google.maps.Size(60, 60)
+            }
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <div class="info-window">
+                <strong>${loc.name}</strong><br>
+                <a href="${loc.pdf}" target="_blank">\ud83d\udcc4 概要書</a><br>
+                <em>${loc.sheet}</em>
+              </div>
+            `
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+          });
+
+          allMarkers.push({ marker, sheet: loc.sheet });
+        });
+      }
+
+      function filterMarkers() {
+        const selected = document.getElementById("filter").value;
+
+        allMarkers.forEach(({ marker, sheet }) => {
+          if (selected === "all" || sheet === selected) {
+            marker.setMap(map);
+          } else {
+            marker.setMap(null);
+          }
+        });
+      }
+    </script>
+  </head>
+
+  <body onload="initMap()">
+    <div class="filter-box" style="padding:10px;background:#f5f5f5">
+      <label for="filter">カテゴリで絞り込み：</label>
+      <select id="filter" onchange="filterMarkers()">
+        <option value="all">すべて表示</option>
+        <option value="土地">土地</option>
+        <option value="戸建て">戸建て</option>
+        <option value="マンション">マンション</option>
+        <option value="収益物件">収益物件</option>
+        <option value="軍用地">軍用地</option>
+        <option value="工場・店舗">工場・店舗</option>
+      </select>
+    </div>
+    <div id="map"></div>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+    </script>
+  </body>
+</html>
