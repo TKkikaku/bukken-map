@@ -20,7 +20,7 @@
 
         const map = new google.maps.Map(document.getElementById("map"), {
           zoom: 10,
-          center: { lat: 26.2124, lng: 127.6809 }, // 沖縄
+          center: { lat: 26.2124, lng: 127.6809 },
         });
 
         data.forEach(property => {
@@ -51,9 +51,8 @@
       }
     </script>
 
-    <!-- 🔑 Google Maps APIキーは下記に貼り付け -->
     <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA&callback=initMap">
+      src="https://maps.googleapis.com/maps/api/js?key=【あなたのAPIキー】&callback=initMap">
     </script>
   </body>
 </html>
