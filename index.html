@@ -1,59 +1,57 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>不動産マップアプリ</title>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
+    <title>不動産マップ</title>
     <style>
-      #map {
-        height: 100vh;
-        width: 100vw;
-      }
+      #map { height: 100vh; width: 100%; }
     </style>
+    <script>
+      async function initMap() {
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 26.2124, lng: 127.6809 },
+          zoom: 9,
+        });
+
+        try {
+          const response = await fetch('https://script.google.com/macros/s/AKfycbzBijfZ-w-53jl33jlNPkzUM57i9BAqU3mfckLwSK2UknIAgomqqrzeONE1AhD3DweeXg/exec');
+          const data = await response.json();
+
+          data.forEach(item => {
+            const marker = new google.maps.Marker({
+              position: { lat: item.lat, lng: item.lng },
+              map,
+            });
+
+            const content = `
+              <b>【${item.sheet}】</b><br>
+              <b>物件名：</b>${item.name}<br>
+              <a href="${item.pdf}" target="_blank">📄PDFを見る</a><br>
+              <b>価格：</b>${item.price}<br>
+              <b>坪単価：</b>${item.unit}<br>
+              <b>紹介元：</b>${item.source}<br>
+              <b>市：</b>${item.city}<br>
+              <b>町：</b>${item.town}<br>
+              <b>備考：</b>${item.note}
+            `;
+
+            const infowindow = new google.maps.InfoWindow({ content });
+
+            marker.addListener("click", () => {
+              infowindow.open({ anchor: marker, map });
+            });
+          });
+        } catch (err) {
+          console.error("データ取得エラー:", err);
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="map"></div>
-
-    <script>
-      async function initMap() {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbzBijfZ-w-53jl33jlNPkzUM57i9BAqU3mfckLwSK2UknIAgomqqrzeONE1AhD3DweeXg/exec");
-        const data = await response.json();
-
-        const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 10,
-          center: { lat: 26.2124, lng: 127.6809 },
-        });
-
-        data.forEach(property => {
-          const marker = new google.maps.Marker({
-            position: { lat: property.lat, lng: property.lng },
-            map,
-            title: property.name
-          });
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: `
-              <div>
-                <strong>${property.name}</strong><br>
-                <a href="${property.pdf}" target="_blank">📄 PDFを見る</a><br>
-                ${property.price ? '価格: ' + property.price + '<br>' : ''}
-                ${property.unit ? '坪単価: ' + property.unit + '<br>' : ''}
-                ${property.source ? '紹介元: ' + property.source + '<br>' : ''}
-                ${property.city && property.town ? '住所: ' + property.city + ' ' + property.town + '<br>' : ''}
-                ${property.note ? '備考: ' + property.note : ''}
-              </div>
-            `
-          });
-
-          marker.addListener("click", () => {
-            infoWindow.open(map, marker);
-          });
-        });
-      }
-    </script>
-
-    <script async defer
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA&callback=initMap">
-</script>
-
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA&callback=initMap"
+      async defer
+    ></script>
   </body>
 </html>
