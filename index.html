@@ -5,6 +5,39 @@
     <title>不動産マップ</title>
     <style>
       #map { height: 100vh; width: 100%; }
+      .custom-tag a {
+    max-width: 90vw; /* スマホ画面の90%まで広がる */
+    word-break: break-word;
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .custom-tag {
+      font-size: 13px;
+      padding: 8px;
+    }
+  }
+
+ .custom-tag a {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 6px 12px;
+  color: white;
+  background-color: #007BFF;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.custom-tag a:hover {
+  background-color: #0056b3;
+}
+
     </style>
     <script>
       async function initMap() {
