@@ -56,7 +56,6 @@
     </style>
     <script>
   let allMarkers = [];
-  let currentInfoWindow = null;
 
   async function initMap() {
     const map = new google.maps.Map(document.getElementById("map"), {
@@ -87,64 +86,44 @@
     }
   }
 
-  >
+  function renderMarkers(category, data, map) {
+    allMarkers.forEach(marker => marker.setMap(null));
+    allMarkers = [];
+
+    const filtered = category === 'all' ? data : data.filter(i => i.sheet === category);
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
+
+    filtered.forEach(item => {
+      const marker = new google.maps.Marker({
+        position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
+        map,
+        title: item.name
+      });
+
+      const content = `
+        <div style="font-size: ${isMobile ? '30px' : '14px'}; line-height: ${isMobile ? '2.4em' : '1.6em'}; max-width: ${isMobile ? '95vw' : '300px'};">
           <div style="font-weight:bold; color:#555; font-size: ${isMobile ? '32px' : '14px'};">［${item.sheet}］</div>
           <strong style="font-size: ${isMobile ? '36px' : '16px'};">${item.name}</strong><br>
           <span style="font-size: ${isMobile ? '32px' : '14px'};">価格：${item.price || '---'} 万円</span><br>
           <span style="font-size: ${isMobile ? '32px' : '14px'};">坪単価：${item.tsubo || '---'}</span><br>
           <span style="font-size: ${isMobile ? '32px' : '14px'};">紹介元：${item.source || '---'}</span><br>
-          <span style="font-size: ${isMobile ? '32px' : '14px'};">市：${item.city || 'function renderMarkers(category, data, map) {
-    
-    let currentInfoWindow = null; // 🔸 グローバルに追加しておく
+          <span style="font-size: ${isMobile ? '32px' : '14px'};">市：${item.city || '---'}／町：${item.town || '---'}</span><br>
+          <span style="font-size: ${isMobile ? '32px' : '14px'};">備考：${item.note || 'なし'}</span><br>
+          <a href="${item.pdf}" target="_blank" style="color:#1a73e8; font-size: ${isMobile ? '28px' : '14px'}; text-decoration: underline;">📄 PDFを見る</a>
+        </div>
+      `;
 
-function renderMarkers(category, data, map) {
-  allMarkers.forEach(marker => marker.setMap(null));
-  allMarkers = [];
-
-  const filtered = category === 'all' ? data : data.filter(i => i.sheet === category);
-  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-  const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
-
-  filtered.forEach(item => {
-    const marker = new google.maps.Marker({
-      position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
-      map,
-      title: item.name
+      const infowindow = new google.maps.InfoWindow({ content });
+      marker.addListener("click", () => infowindow.open({ anchor: marker, map }));
+      allMarkers.push(marker);
     });
 
-    const content = `
-      <div style="font-size: ${isMobile ? '30px' : '14px'}; line-height: ${isMobile ? '2.4em' : '1.6em'}; max-width: ${isMobile ? '95vw' : '300px'};">
-        <div style="font-weight:bold; color:#555; font-size: ${isMobile ? '32px' : '14px'};">［${item.sheet}］</div>
-        <strong style="font-size: ${isMobile ? '36px' : '16px'};">${item.name}</strong><br>
-        <span style="font-size: ${isMobile ? '32px' : '14px'};">価格：${item.price || '---'} 万円</span><br>
-        <span style="font-size: ${isMobile ? '32px' : '14px'};">坪単価：${item.tsubo || '---'}</span><br>
-        <span style="font-size: ${isMobile ? '32px' : '14px'};">紹介元：${item.source || '---'}</span><br>
-        <span style="font-size: ${isMobile ? '32px' : '14px'};">市：${item.city || '---'}／町：${item.town || '---'}</span><br>
-        <span style="font-size: ${isMobile ? '32px' : '14px'};">備考：${item.note || 'なし'}</span><br>
-        <a href="${item.pdf}" target="_blank" style="color:#1a73e8; font-size: ${isMobile ? '28px' : '14px'}; text-decoration: underline;">📄 PDFを見る</a>
-      </div>
-    `;
-
-    const infowindow = new google.maps.InfoWindow({ content });
-
-    // 🔸ここで前のウィンドウを閉じてから新しく開く
-    marker.addListener('click', () => {
-      if (currentInfoWindow) {
-        currentInfoWindow.close();
-      }
-      infowindow.open(map, marker);
-      currentInfoWindow = infowindow;
-    });
-
-    allMarkers.push(marker);
-  });
-
-  if (filtered.length > 0) {
-    map.setCenter({ lat: parseFloat(filtered[0].lat), lng: parseFloat(filtered[0].lng) });
-    map.setZoom(14);
+    if (filtered.length > 0) {
+      map.setCenter({ lat: parseFloat(filtered[0].lat), lng: parseFloat(filtered[0].lng) });
+      map.setZoom(14);
+    }
   }
-}
-
 </script>
 
   </head>
