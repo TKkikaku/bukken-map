@@ -52,22 +52,6 @@
     font-size: 36px;
   }
 }
-/* プルダウンの基本スタイル（PC） */
-#categoryFilter {
-  font-size: 16px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-/* スマホ向けに拡大 */
-@media (max-width: 768px) {
-  #categoryFilter {
-    font-size: 22px;
-    padding: 10px 16px;
-    width: 90vw;
-  }
-}
 
     </style>
     <script>
@@ -95,6 +79,8 @@
       // ▼ プルダウンの取得と選択肢のセット
       const categoryFilter = document.getElementById('categoryFilter');
       const categories = [...new Set(data.map(item => item.sheet))].filter(sheet => sheet && sheet !== "名刺");
+      categoryFilter.innerHTML = '<option value="">カテゴリを選択</option>' +
+    categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
      categoryFilter.addEventListener('change', (e) => {
     if (e.target.value) {
@@ -161,7 +147,7 @@
   <body>
     <div class="filter-box" style="position:absolute; top:60px; left:10px; z-index:999; background:white; padding:5px; border-radius:4px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
   <select id="categoryFilter" style="font-size:16px; padding:4px;">
-    
+    <option value="all">すべて表示</option>
   </select>
 </div>
 
