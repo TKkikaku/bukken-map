@@ -79,17 +79,16 @@
       // ▼ プルダウンの取得と選択肢のセット
       const categoryFilter = document.getElementById('categoryFilter');
       const categories = [...new Set(data.map(item => item.sheet))].filter(sheet => sheet && sheet !== "名刺");
-      categoryFilter.innerHTML = '<option value="all">すべて表示</option>' +
-        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+      categoryFilter.innerHTML = '<option value="">カテゴリを選択</option>' +
+    categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
-      // ▼ プルダウン変更時に再描画
-      categoryFilter.addEventListener('change', (e) => {
-        renderMarkers(e.target.value, data, map);
-      });
+     categoryFilter.addEventListener('change', (e) => {
+    if (e.target.value) {
+      renderMarkers(e.target.value, data, map);
+    }
+  });
 
-      // 初期表示
-      renderMarkers('all', data, map);
-
+      
     } catch (err) {
       console.error("データ取得エラー:", err);
     }
