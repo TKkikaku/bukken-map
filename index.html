@@ -106,7 +106,7 @@
       const marker = new google.maps.Marker({
         position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
         map,
-        title: item.name
+        title: item.name,
         icon: iconMap[item.sheet] || iconMap["その他"]
       });
 
