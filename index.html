@@ -130,7 +130,11 @@
   if (currentInfoWindow) {
     currentInfoWindow.close();
   }
-      allMarkers.push(marker);
+  infowindow.open(map, marker);
+  currentInfoWindow = infowindow;
+  allMarkers.push(marker); 
+});
+      
     });
 
     if (filtered.length > 0) {
