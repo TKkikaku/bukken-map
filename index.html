@@ -55,14 +55,6 @@
 
     </style>
     <script>
-      const categoryColors = {
-  "土地": "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-  "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-  "マンション": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-  "ホテル・一棟売り": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-  "外人住宅": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-  "民泊運営物件": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
-};
 
   let allMarkers = [];
   let currentInfoWindow = null;
@@ -116,11 +108,10 @@ function renderMarkers(category, data, map) {
 
   filtered.forEach(item => {
     const marker = new google.maps.Marker({
-  position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
-  map,
-  title: item.name,
-  icon: categoryColors[item.sheet] || null
-});
+      position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
+      map,
+      title: item.name
+    });
 
     const content = `
       <div style="font-size: ${isMobile ? '30px' : '14px'}; line-height: ${isMobile ? '2.4em' : '1.6em'}; max-width: ${isMobile ? '95vw' : '300px'};">
