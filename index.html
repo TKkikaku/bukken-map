@@ -56,6 +56,14 @@
     </style>
     <script>
   let allMarkers = [];
+  const iconMap = {
+  "土地": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+  "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+  "マンション": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+  "外人住宅": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+  "民泊運営物件": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+  "その他": "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+};
 
   async function initMap() {
     const map = new google.maps.Map(document.getElementById("map"), {
@@ -99,6 +107,7 @@
         position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
         map,
         title: item.name
+        icon: iconMap[item.sheet] || iconMap["その他"]
       });
 
       const content = `
