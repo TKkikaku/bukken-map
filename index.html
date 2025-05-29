@@ -56,6 +56,7 @@
     </style>
     <script>
   let allMarkers = [];
+  let currentInfoWindow = null;
   const iconMap = {
   "土地": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
   "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
@@ -124,7 +125,11 @@
       `;
 
       const infowindow = new google.maps.InfoWindow({ content });
-      marker.addListener("click", () => infowindow.open({ anchor: marker, map }));
+      marker.addListener("click", () => {
+  // 他のウィンドウが開いてたら閉じる
+  if (currentInfoWindow) {
+    currentInfoWindow.close();
+  }
       allMarkers.push(marker);
     });
 
