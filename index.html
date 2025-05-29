@@ -1,172 +1,57 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>不動産マップ</title>
-  <style>
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-    }
-    #map { height: 100vh; width: 100%; }
-    #login-box {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; height: 100vh;
-    }
-    .gm-style-iw div {
-    font-size: 16px;
-    line-height: 1.6;
-    max-width: 90vw;
-    word-break: break-word;
-  }
-
-  .gm-style-iw a {
-    font-size: 16px;
-    display: inline-block;
-    margin-top: 6px;
-    color: #1a73e8;
-    text-decoration: underline;
-  }
-    #map, .filter-box { display: none; }
-     @media (max-width: 768px) {
-    .info-window {
-      font-size: 22px;
-      line-height: 1.8em;
-    }
-
-    .info-window .category {
-      font-size: 24px;
-    }
-
-    .info-window .title {
-      font-size: 26px;
-    }
-
-    .info-window a {
-      font-size: 22px;
-    }
-  }
-  </style>
-</head>
-<body>
-  <div id="login-box">
-    <h2>パスコードを入力してください</h2>
-    <input type="password" id="passcode-input" placeholder="パスコードを入力" />
-    <button onclick="checkPasscode()">ログイン</button>
-    <p id="error-message" style="color: red;"></p>
-  </div>
-
-  <div class="filter-box" style="position:absolute; top:60px; left:10px; z-index:999; background:white; padding:5px; border-radius:4px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
-    <select id="categoryFilter" style="font-size:14px;"></select>
-  </div>
-
-  <div id="map"></div>
-
-  <script>
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbxIfEqDBLd7Ztrf4o52oG-ZswYQMmGJiaNFIGy7T0I0Sa3u6VUl2KvkpjkvPtMU3fkUQA/exec';
-    const CORRECT_PASSCODE = "Tkkikaku1212!";
-    let allMarkers = [];
-
-    const iconMap = {
-      "土地": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-      "戸建て": "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-      "マンション": "http://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-      "外人住宅": "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-      "民泊運営物件": "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-      "その他": "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-    };
-
-    function checkPasscode() {
-      const input = document.getElementById("passcode-input").value;
-      const error = document.getElementById("error-message");
-      if (input === CORRECT_PASSCODE) {
-        localStorage.setItem("tk_passcode", input);
-        document.getElementById("login-box").style.display = "none";
-        document.getElementById("map").style.display = "block";
-        document.querySelector(".filter-box").style.display = "block";
-        initMap();
-      } else {
-        error.textContent = "パスコードが違います";
-      }
-    }
-
-    window.onload = () => {
-      const saved = localStorage.getItem("tk_passcode");
-      if (saved === CORRECT_PASSCODE) {
-        document.getElementById("login-box").style.display = "none";
-        document.getElementById("map").style.display = "block";
-        document.querySelector(".filter-box").style.display = "block";
-        initMap();
-      }
-    };
-
-    async function initMap() {
-      try {
-        const res = await fetch(scriptUrl);
-        const data = await res.json();
-
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>不動産マップ</title>
+    <style>
+      #map { height: 100vh; width: 100%; }
+    </style>
+    <script>
+      async function initMap() {
         const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 26.2124, lng: 127.6809 }, zoom: 10
+          center: { lat: 26.2124, lng: 127.6809 },
+          zoom: 9,
         });
 
-        const categoryFilter = document.getElementById('categoryFilter');
-        const categories = [...new Set(data.map(item => item.sheet))].filter(sheet => sheet && sheet !== "名刺");
-        categoryFilter.innerHTML = '<option value="all">すべて表示</option>' + categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        try {
+          const response = await fetch('https://https://script.google.com/macros/s/AKfycbwuYJQ7Oxjh0cyDDjmoEjFBhSbmUSZ1cO7uw0ONdnWojfQD36L8IVrMAa8O07haB2_Yqw/exec');
+          const data = await response.json();
 
-        function renderMarkers(category) {
-          allMarkers.forEach(marker => marker.setMap(null));
-          allMarkers = [];
-
-          const filtered = category === 'all' ? data : data.filter(i => i.sheet === category);
-
-          filtered.forEach(item => {
+          data.forEach(item => {
             const marker = new google.maps.Marker({
-              position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
+              position: { lat: item.lat, lng: item.lng },
               map,
-              title: item.name,
-              icon: iconMap[item.sheet] || iconMap["その他"]
             });
 
-            const infowindow = new google.maps.InfoWindow({
-              content: `
-  <div class="info-window">
-    <div class="category">［${item.sheet}］</div>
-    <strong class="title">${item.name}</strong><br>
-    <span>価格：${item.price || '---'} 万円</span><br>
-    <span>坪単価：${item.tsubo || '---'}</span><br>
-    <span>紹介元：${item.source || '---'}</span><br>
-    <span>市：${item.city || '---'}／町：${item.town || '---'}</span><br>
-    <span>備考：${item.note || 'なし'}</span><br>
-    <a href="${item.pdf}" target="_blank">📄 PDFを開く</a>
-  </div>
-  ` 
+            const content = `
+              <b>【${item.sheet}】</b><br>
+              <b>物件名：</b>${item.name}<br>
+              <a href="${item.pdf}" target="_blank">📄PDFを見る</a><br>
+              <b>価格：</b>${item.price}<br>
+              <b>坪単価：</b>${item.unit}<br>
+              <b>紹介元：</b>${item.source}<br>
+              <b>市：</b>${item.city}<br>
+              <b>町：</b>${item.town}<br>
+              <b>備考：</b>${item.note}
+            `;
 
+            const infowindow = new google.maps.InfoWindow({ content });
+
+            marker.addListener("click", () => {
+              infowindow.open({ anchor: marker, map });
             });
-
-            marker.addListener('click', () => infowindow.open(map, marker));
-            allMarkers.push(marker);
           });
-
-          if (filtered.length > 0) {
-            map.setCenter({ lat: parseFloat(filtered[0].lat), lng: parseFloat(filtered[0].lng) });
-            map.setZoom(14);
-          }
+        } catch (err) {
+          console.error("データ取得エラー:", err);
         }
-
-        renderMarkers('all');
-        categoryFilter.addEventListener('change', (e) => {
-          renderMarkers(e.target.value);
-        });
-      } catch (err) {
-        console.error("initMap エラー:", err);
       }
-    }
-
-    window.initMap = initMap;
-    window.checkPasscode = checkPasscode;
-  </script>
-
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA&callback=initMap">
-  </script>
-</body>
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA&callback=initMap"
+      async defer
+    ></script>
+  </body>
 </html>
