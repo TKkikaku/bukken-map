@@ -5,6 +5,54 @@
     <title>不動産マップ</title>
     <style>
       #map { height: 100vh; width: 100%; }
+      /* デフォルトのスタイル（PC） */
+.info-window {
+  font-size: 14px;
+  line-height: 1.6em;
+  max-width: 300px;
+}
+
+.info-window .category {
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+}
+
+.info-window .title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.info-window a {
+  font-size: 14px;
+  display: inline-block;
+  margin-top: 5px;
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+/* スマホ向けのスタイル */
+@media (max-width: 768px) {
+  .info-window {
+    font-size: 20px;
+    line-height: 1.8em;
+    max-width: 90vw;
+  }
+
+  .info-window .category {
+    font-size: 22px;
+  }
+
+  .info-window .title {
+    font-size: 24px;
+  }
+
+  .info-window a {
+    font-size: 20px;
+  }
+}
+
     </style>
     <script>
       async function initMap() {
@@ -24,16 +72,18 @@
             });
 
             const content = `
-              <b>【${item.sheet}】</b><br>
-              <b>物件名：</b>${item.name}<br>
-              <a href="${item.pdf}" target="_blank">📄PDFを見る</a><br>
-              <b>価格：</b>${item.price}<br>
-              <b>坪単価：</b>${item.unit}<br>
-              <b>紹介元：</b>${item.source}<br>
-              <b>市：</b>${item.city}<br>
-              <b>町：</b>${item.town}<br>
-              <b>備考：</b>${item.note}
-            `;
+            <div class="info-window">
+    <div class="category">［${item.sheet}］</div>
+    <strong class="title">${item.name}</strong><br>
+    <a href="${item.pdf}" target="_blank">📄 PDFを見る</a><br>
+    <span>価格：${item.price || '---'} 万円</span><br>
+    <span>坪単価：${item.tsubo || '---'}</span><br>
+    <span>紹介元：${item.source || '---'}</span><br>
+    <span>市：${item.city || '---'}／町：${item.town || '---'}</span><br>
+    <span>備考：${item.note || 'なし'}</span>
+  </div>
+`;
+             
 
             const infowindow = new google.maps.InfoWindow({ content });
 
