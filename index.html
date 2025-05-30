@@ -124,64 +124,58 @@
     }
   }
 
-  function renderMarkers(category, data, map) {
-    allMarkers.forEach(marker => marker.setMap(null));
-    allMarkers = [];
+  function renderMarkers(category) {
+  clearMarkers();
+  const filtered = category === "すべて" ? data : data.filter(item => item.sheet === category);
 
-    const filtered = category === 'all' ? data : data.filter(i => i.sheet === category);
+  filtered.forEach(item => {
+    const isMobile = window.innerWidth <= 768;
+    const isMeishi = item.sheet === "名刺";
 
-    filtered.forEach(item => {
-  const isMobile = window.innerWidth <= 768;
-  const isMeishi = item.sheet === "名刺";
-
-  if (isMeishi) {
-    console.log("名刺PDFリンク:", item.pdf);
-  }
-
-  const marker = new google.maps.Marker({
-    position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
-    map,
-    icon: {
-      url: iconMap[item.sheet] || iconMap["その他"],
-      scaledSize: new google.maps.Size(isMobile ? 64 : 32, isMobile ? 64 : 32)
-    },
-    title: item.name
-  });
-      const isMeishi = item.sheet === "名刺";
-const content = isMeishi
-  ? `
-    <div class="info-window">
-      <div class="category">［${item.sheet}］</div>
-      <div class="title">${item.name}</div>
-      <div>備考：${item.note || 'なし'}</div>
-      <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
-    </div>
-  `
-  : `
-    <div class="info-window">
-      <div class="category">［${item.sheet}］</div>
-      <div class="title">${item.name}</div>
-      <div>価格：${item.price || '---'} 万円</div>
-      <div>坪単価：${item.tsubo || '---'}</div>
-      <div>紹介元：${item.source || '---'}</div>
-      <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
-      <div>備考：${item.note || 'なし'}</div>
-      <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
-    </div>
-  `;
-
-
-      const infowindow = new google.maps.InfoWindow({ content });
-
-      marker.addListener("click", () => {
-        if (currentInfoWindow) currentInfoWindow.close();
-        infowindow.open({ anchor: marker, map });
-        currentInfoWindow = infowindow;
-      });
-
-      allMarkers.push(marker);
+    const marker = new google.maps.Marker({
+      position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
+      map,
+      icon: {
+        url: iconMap[item.sheet] || iconMap["その他"],
+        scaledSize: new google.maps.Size(isMobile ? 64 : 32, isMobile ? 64 : 32)
+      },
+      title: item.name
     });
-  }
+
+    const content = isMeishi
+      ? `
+        <div class="info-window">
+          <div class="category">［${item.sheet}］</div>
+          <div class="title">${item.name}</div>
+          <div>備考：${item.note || 'なし'}</div>
+          <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
+        </div>
+      `
+      : `
+        <div class="info-window">
+          <div class="category">［${item.sheet}］</div>
+          <div class="title">${item.name}</div>
+          <div>価格：${item.price || '---'} 万円</div>
+          <div>坪単価：${item.unit || '---'}</div>
+          <div>紹介元：${item.source || '---'}</div>
+          <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
+          <div>備考：${item.note || 'なし'}</div>
+          <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
+        </div>
+      `;
+
+    const infowindow = new google.maps.InfoWindow({ content });
+
+    marker.addListener("click", () => {
+      if (currentInfoWindow) currentInfoWindow.close();
+      infowindow.open({ anchor: marker, map });
+      currentInfoWindow = infowindow;
+    });
+
+    allMarkers.push(marker);
+  });
+}
+
 </script>
 
 
