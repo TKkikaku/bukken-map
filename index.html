@@ -106,7 +106,7 @@
 
       // ▼ プルダウン設定
       const categoryFilter = document.getElementById('categoryFilter');
-      const categories = [...new Set(data.map(item => item.sheet))];
+      const categories = [...new Set(data.map(item => item.sheet))];.filter(sheet => sheet);
       console.log("カテゴリ一覧:", categories);
 
       categoryFilter.innerHTML = '<option value="">カテゴリを選択</option>' +
