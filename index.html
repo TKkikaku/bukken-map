@@ -149,11 +149,8 @@ const content = isMeishi
     <div class="info-window">
       <div class="category">［${item.sheet}］</div>
       <div class="title">${item.name}</div>
-      <img src="${item.image}" alt="名刺画像" style="width: 100%; margin: 5px 0;" />
-      <div>会社TEL：${item.companyTel}</div>
-      <div>担当名：${item.contact}（${item.furigana}）</div>
-      <div>担当TEL：<a href="tel:${item.tel}">${item.tel}</a></div>
-      <div>備考：${item.note}</div>
+      <div>備考：${item.note || 'なし'}</div>
+      <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
     </div>
   `
   : `
@@ -168,6 +165,7 @@ const content = isMeishi
       <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
     </div>
   `;
+
 
       const infowindow = new google.maps.InfoWindow({ content });
 
