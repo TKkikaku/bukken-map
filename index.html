@@ -130,13 +130,18 @@
     const filtered = category === 'all' ? data : data.filter(i => i.sheet === category);
 
     filtered.forEach(item => {
-      const marker = new google.maps.Marker({
-        position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
-        map,
-        icon: iconMap[item.sheet] || null,
-        scaledSize: new google.maps.Size(48, 48)  // ← ここでピンのサイズを大きく
+        const isMobile = window.innerWidth <= 768;
+
+const marker = new google.maps.Marker({
+  position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
+  map,
+  icon: {
+    url: iconMap[item.sheet] || iconMap["その他"],
+    scaledSize: new google.maps.Size(isMobile ? 64 : 32, isMobile ? 64 : 32)
   },
-        title: item.name
+  title: item.name
+});
+
       });
 
       const content = `
