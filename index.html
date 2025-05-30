@@ -125,8 +125,8 @@
   }
 
   function renderMarkers(category) {
-  clearMarkers();
-  const filtered = category === "すべて" ? data : data.filter(item => item.sheet === category);
+  allMarkers.forEach(marker => marker.setMap(null)); // ← マーカー削除
+  allMarkers = [];
 
   filtered.forEach(item => {
     const isMobile = window.innerWidth <= 768;
