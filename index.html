@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html>不動産マップ
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -107,6 +107,7 @@
       // ▼ プルダウン設定
       const categoryFilter = document.getElementById('categoryFilter');
       const categories = [...new Set(data.map(item => item.sheet))];
+      console.log("カテゴリ一覧:", categories);
 
       categoryFilter.innerHTML = '<option value="">カテゴリを選択</option>' +
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
