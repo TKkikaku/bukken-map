@@ -134,6 +134,8 @@
         position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
         map,
         icon: iconMap[item.sheet] || null,
+        scaledSize: new google.maps.Size(48, 48)  // ← ここでピンのサイズを大きく
+  },
         title: item.name
       });
 
