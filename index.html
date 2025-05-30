@@ -132,7 +132,10 @@
 
     filtered.forEach(item => {
         const isMobile = window.innerWidth <= 768;
-
+ const isMeishi = item.sheet === "名刺"; // ←ここ追加！
+  
+  if (isMeishi) {
+    console.log("名刺PDFリンク:", item.pdf);
 const marker = new google.maps.Marker({
   position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
   map,
