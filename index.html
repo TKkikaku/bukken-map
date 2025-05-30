@@ -33,40 +33,36 @@
 }
 /* ⬇ プルダウン共通スタイル */
   select#categoryFilter {
-    font-size: 18px;
-    padding: 6px 10px;
-    border-radius: 4px;
+    font-size: 24px;
+    padding: 10px 16px;
+     width: 100%;
+    box-sizing: border-box;
+    margin: 12px 0;
+    border-radius: 4px
     background-color: #fff;
     border: 1px solid #ccc;
+    appearance: none;         /* ブラウザのデフォルト矢印を非表示 */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='14' height='10' viewBox='0 0 14 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10L0.937822 0.25L13.0622 0.25L7 10Z' fill='%23333'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 24px;
   }
 
 /* スマホ向けのスタイル */
 @media (max-width: 768px) {
   .info-window {
     font-size: 24px;
-    padding: 14px 16px;
-    width: 100%;           /* ← 追加！ */
-    box-sizing: border-box;
+    line-height: 2.2em;
+      max-width: 95vw;
   }
 
-  .info-window .category {
-    font-size: 36px;
-  }
+  .info-window .category,
 
-  .info-window .title {
-    font-size: 36px;
-  }
+  .info-window .title ,
 
   .info-window a {
     font-size: 36px;
   }
-  select#categoryFilter {
-      font-size: 24px;
-      padding: 10px 16px;
-      width: 100%;
-    box-sizing: border-box;
-    margin: 12px 0;
-}
 }
 </style>
 
