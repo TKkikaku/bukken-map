@@ -156,15 +156,17 @@
 
 if (isMeishi) {
   content = `
-    <div class="info-window">
-      <div class="category">【名刺】</div>
-      <div><strong>会社名：</strong>${item.name || ''}</div>
-      <div><strong>担当者：</strong>${item.repName || ''}</div>
-      <div><strong>電話番号：</strong><a href="tel:${item.repTel}">${item.repTel || ''}</a></div>
-      <div><strong>備考：</strong>${item.note || ''}</div>
-      ${item.pdf ? `<div style="margin-top:8px;"><a href="${item.pdf}" target="_blank">📄 PDFリンク</a></div>` : ''}
-    </div>
-  `;
+   content = `
+  <div class="info-window" style="font-size: 28px; line-height: 1.8em; max-width: 90vw;">
+    <div class="category" style="font-size: 30px; font-weight: bold;">【名刺】</div>
+    <div><strong>会社名：</strong>${item.name || ''}</div>
+    <div><strong>担当者：</strong>${item.repName || ''}</div>
+    <div><strong>電話番号：</strong><a href="tel:${item.repTel}" style="font-size: 28px; color: #1a73e8;">${item.repTel || ''}</a></div>
+    <div><strong>備考：</strong>${item.note || ''}</div>
+    ${item.pdf ? `<div style="margin-top:8px;"><a href="${item.pdf}" target="_blank" style="font-size: 28px; color: #1a73e8;">📄 PDFリンク</a></div>` : ''}
+  </div>
+`;
+
 } else if (item.price || item.unit || item.source || item.city || item.town) {
   content = `
     <div class="info-window">
