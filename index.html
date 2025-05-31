@@ -156,8 +156,8 @@
 
 if (isMeishi) {
   content = `
-  <div class="info-window" style="font-size: 28px; line-height: 1.8em; max-width: 90vw;">
-    <div class="category" style="font-size: 30px; font-weight: bold;">【名刺】</div>
+  <div class="info-window" style="font-size: 30px; line-height: 1.9em; max-width: 92vw;">
+    <div class="category" style="font-size: 32px; font-weight: bold;">【名刺】</div>
     <div><strong>会社名：</strong>${item.name || ''}</div>
     <div><strong>担当者：</strong>${item.repName || ''}</div>
     <div><strong>電話番号：</strong><a href="tel:${item.repTel}" style="font-size: 28px; color: #1a73e8;">${item.repTel || ''}</a></div>
@@ -168,9 +168,9 @@ if (isMeishi) {
 
 } else if (item.price || item.unit || item.source || item.city || item.town) {
   content = `
-  <div class="info-window" style="font-size: 28px; line-height: 1.8em; max-width: 90vw; padding: 8px;">
-    <div class="category" style="font-weight: bold; font-size: 30px;">【${item.sheet}】</div>
-    <div class="title" style="font-size: 30px;">${item.name}</div>
+  <div class="info-window" style="font-size: 30px; line-height: 1.9em; max-width: 92vw; padding: 10px;">
+    <div class="category" style="font-weight: bold; font-size: 32px;">【${item.sheet}】</div>
+    <div class="title" style="font-size: 32px;">${item.name}</div>
     <div>価格：${item.price || '---'} 万円</div>
     <div>坪単価：${item.unit || '---'}</div>
     <div>紹介元：${item.source || '---'}</div>
@@ -182,9 +182,9 @@ if (isMeishi) {
 
 } else {
   content = `
-  <div class="info-window" style="font-size: 28px; line-height: 1.8em; max-width: 90vw; padding: 8px;">
-    <div class="category" style="font-weight: bold; font-size: 30px;">【${item.sheet}】</div>
-    <div class="title" style="font-size: 30px;">${item.name}</div>
+  <div class="info-window" style="font-size: 30px; line-height: 1.9em; max-width: 92vw; padding: 10px;">
+    <div class="category" style="font-weight: bold; font-size: 32px;">【${item.sheet}】</div>
+    <div class="title" style="font-size: 32px;">${item.name}</div>
     <div>価格：${item.price || '---'} 万円</div>
     <div>坪単価：${item.unit || '---'}</div>
     <div>紹介元：${item.source || '---'}</div>
