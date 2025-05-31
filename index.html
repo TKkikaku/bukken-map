@@ -37,7 +37,7 @@
   box-sizing: border-box;
     font-size: 18px;
     padding: 10px 12px;
-    border-radius: 4px
+    border-radius: 4px；
     background-color: #fff;
     border: 1px solid #ccc;
     appearance: none;         /* ブラウザのデフォルト矢印を非表示 */
@@ -51,7 +51,7 @@
 @media (max-width: 768px) {
   select#categoryFilter {
     font-size: 32px;
-    padding:　18px 20px;
+    padding: 18px 20px;
     height: 80px; /* ← 高さを明示的に指定 */
     border-radius: 12px;
     background-size: 36px;
@@ -151,8 +151,10 @@
       title: item.name,
     });
 
-    cconst content = isMeishi
-  ? `
+  let content = '';
+
+if (isMeishi) {
+  content = `
     <div class="info-window">
       <div class="category">【名刺】</div>
       <div><strong>会社名：</strong>${item.name || ''}</div>
@@ -161,12 +163,25 @@
       <div><strong>備考：</strong>${item.note || ''}</div>
       ${item.pdf ? `<div style="margin-top:8px;"><a href="${item.pdf}" target="_blank">📄 PDFリンク</a></div>` : ''}
     </div>
-  `
-
-      : `
-        <div class="info-window">
-          <div class="category">［${item.sheet}］</div>
-          <div class="title">${item.name}</div>
+  `;
+} else if (item.price || item.unit || item.source || item.city || item.town) {
+  content = `
+    <div class="info-window">
+      <div class="category">【${item.sheet}】</div>
+      <div class="title">${item.name}</div>
+      <div>価格：${item.price || '---'} 万円</div>
+      <div>坪単価：${item.unit || '---'}</div>
+      <div>紹介元：${item.source || '---'}</div>
+      <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
+      <div>備考：${item.note || 'なし'}</div>
+      <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
+    </div>
+  `;
+} else {
+  content = `
+    <div class="info-window">
+      <div class="category">【${item.sheet}】</div>
+      <div class="title">${item.name}</div>
           <div>価格：${item.price || '---'} 万円</div>
           <div>坪単価：${item.unit || '---'}</div>
           <div>紹介元：${item.source || '---'}</div>
@@ -175,7 +190,7 @@
           <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
         </div>
       `;
-
+}
     const infowindow = new google.maps.InfoWindow({ content });
 
     marker.addListener("click", () => {
@@ -193,7 +208,6 @@
 
   </head>
   <body>
-</div>
 <div id="categoryBar">
     <select id="categoryFilter">
       <option>カテゴリを選択</option>
