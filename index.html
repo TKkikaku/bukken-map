@@ -128,18 +128,31 @@
   allMarkers.forEach(marker => marker.setMap(null)); // ← マーカー削除
   allMarkers = [];
 
+  function renderMarkers(category, data, map) {
+  allMarkers.forEach(marker => marker.setMap(null));
+  allMarkers = [];
+
+  // 🔽 これを先に定義！
+  const filtered = category === 'all'
+    ? data
+    : data.filter(i => i.sheet === category);
+
   filtered.forEach(item => {
     const isMobile = window.innerWidth <= 768;
     const isMeishi = item.sheet === "名刺";
+
+    if (isMeishi) {
+      console.log("名刺PDFリンク:", item.pdf);
+    }
 
     const marker = new google.maps.Marker({
       position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
       map,
       icon: {
         url: iconMap[item.sheet] || iconMap["その他"],
-        scaledSize: new google.maps.Size(isMobile ? 64 : 32, isMobile ? 64 : 32)
+        scaledSize: new google.maps.Size(isMobile ? 64 : 32, isMobile ? 64 : 32),
       },
-      title: item.name
+      title: item.name,
     });
 
     const content = isMeishi
