@@ -49,17 +49,22 @@
 
 /* スマホ向けのスタイル */
 @media (max-width: 768px) {
-  .info-window {
-    font-size: 32px;       /* ← 💡ここで全体指定！ */
+  .gm-style-iw,         /* Google Maps infoWindowの本体 */
+  .info-window,
+  .info-window * {
+    font-size: 28px !important;
     line-height: 1.8em;
-    max-width: 90vw;
-    padding: 8px;
   }
 
-  .info-window .category,
-  .info-window .title,
   .info-window a {
-    font-size: 30px;
+    font-size: 30px !important;
+    color: #1a73e8;
+    text-decoration: underline;
+  }
+
+  .info-window {
+    max-width: 90vw;
+    padding: 10px;
   }
 }
 #categoryBar {
