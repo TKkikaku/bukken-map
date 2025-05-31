@@ -124,10 +124,6 @@
     }
   }
 
-  function renderMarkers(category) {
-  allMarkers.forEach(marker => marker.setMap(null)); // ← マーカー削除
-  allMarkers = [];
-
   function renderMarkers(category, data, map) {
   allMarkers.forEach(marker => marker.setMap(null));
   allMarkers = [];
