@@ -49,21 +49,17 @@
 
 /* スマホ向けのスタイル */
 @media (max-width: 768px) {
-  select#categoryFilter {
-    font-size: 32px;
-    padding: 18px 20px;
-    height: 80px; /* ← 高さを明示的に指定 */
-    border-radius: 12px;
-    background-size: 36px;
-    background-position: right 20px center;
+  .info-window {
+    font-size: 32px;       /* ← 💡ここで全体指定！ */
+    line-height: 1.8em;
+    max-width: 90vw;
+    padding: 8px;
   }
 
   .info-window .category,
-
-  .info-window .title ,
-
+  .info-window .title,
   .info-window a {
-    font-size: 36px;
+    font-size: 30px;
   }
 }
 #categoryBar {
