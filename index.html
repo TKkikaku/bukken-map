@@ -169,30 +169,34 @@ if (isMeishi) {
 
 } else if (item.price || item.unit || item.source || item.city || item.town) {
   content = `
-    <div class="info-window">
-      <div class="category">【${item.sheet}】</div>
-      <div class="title">${item.name}</div>
-      <div>価格：${item.price || '---'} 万円</div>
-      <div>坪単価：${item.unit || '---'}</div>
-      <div>紹介元：${item.source || '---'}</div>
-      <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
-      <div>備考：${item.note || 'なし'}</div>
-      <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
-    </div>
-  `;
+    content = `
+  <div class="info-window" style="font-size: 28px; line-height: 1.8em; max-width: 90vw; padding: 8px;">
+    <div class="category" style="font-weight: bold; font-size: 30px;">【${item.sheet}】</div>
+    <div class="title" style="font-size: 30px;">${item.name}</div>
+    <div>価格：${item.price || '---'} 万円</div>
+    <div>坪単価：${item.unit || '---'}</div>
+    <div>紹介元：${item.source || '---'}</div>
+    <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
+    <div>備考：${item.note || 'なし'}</div>
+    ${item.pdf ? `<div><a href="${item.pdf}" target="_blank" style="font-size: 28px; color: #1a73e8;">📄 PDFを見る</a></div>` : ''}
+  </div>
+`;
+
 } else {
   content = `
-    <div class="info-window">
-      <div class="category">【${item.sheet}】</div>
-      <div class="title">${item.name}</div>
-          <div>価格：${item.price || '---'} 万円</div>
-          <div>坪単価：${item.unit || '---'}</div>
-          <div>紹介元：${item.source || '---'}</div>
-          <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
-          <div>備考：${item.note || 'なし'}</div>
-          <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
-        </div>
-      `;
+   content = `
+  <div class="info-window" style="font-size: 28px; line-height: 1.8em; max-width: 90vw; padding: 8px;">
+    <div class="category" style="font-weight: bold; font-size: 30px;">【${item.sheet}】</div>
+    <div class="title" style="font-size: 30px;">${item.name}</div>
+    <div>価格：${item.price || '---'} 万円</div>
+    <div>坪単価：${item.unit || '---'}</div>
+    <div>紹介元：${item.source || '---'}</div>
+    <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
+    <div>備考：${item.note || 'なし'}</div>
+    ${item.pdf ? `<div><a href="${item.pdf}" target="_blank" style="font-size: 28px; color: #1a73e8;">📄 PDFを見る</a></div>` : ''}
+  </div>
+`;
+
 }
     const infowindow = new google.maps.InfoWindow({ content });
 
