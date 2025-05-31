@@ -151,15 +151,18 @@
       title: item.name,
     });
 
-    const content = isMeishi
-      ? `
-        <div class="info-window">
-          <div class="category">［${item.sheet}］</div>
-          <div class="title">${item.name}</div>
-          <div>備考：${item.note || 'なし'}</div>
-          <a href="${item.pdf}" target="_blank">📄 PDFを見る</a>
-        </div>
-      `
+    cconst content = isMeishi
+  ? `
+    <div class="info-window">
+      <div class="category">【名刺】</div>
+      <div><strong>会社名：</strong>${item.name || ''}</div>
+      <div><strong>担当者：</strong>${item.repName || ''}</div>
+      <div><strong>電話番号：</strong><a href="tel:${item.repTel}">${item.repTel || ''}</a></div>
+      <div><strong>備考：</strong>${item.note || ''}</div>
+      ${item.pdf ? `<div style="margin-top:8px;"><a href="${item.pdf}" target="_blank">📄 PDFリンク</a></div>` : ''}
+    </div>
+  `
+
       : `
         <div class="info-window">
           <div class="category">［${item.sheet}］</div>
