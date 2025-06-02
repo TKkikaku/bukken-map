@@ -113,26 +113,64 @@
       categoryFilter.innerHTML = '<option value="">カテゴリを選択</option>' +
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
-      // ▼ プルダウン選択時
-      categoryFilter.addEventListener('change', (e) => {
-        if (e.target.value) {
-          renderMarkers(e.target.value, data, map);
-        }
-      });
+      const cityFilterContainer = document.getElementById('cityFilterContainer');
+
+categoryFilter.addEventListener('change', (e) => {
+  const selectedCategory = e.target.value;
+
+  // 市一覧を取得（空でない値だけ）
+  const cities = [...new Set(data.filter(d => d.sheet === selectedCategory).map(d => d.city))].filter(Boolean);
+
+  // 市ボタンを生成
+  cityFilterContainer.innerHTML = '<strong>市を選択：</strong><br>';
+
+  // 「すべて」ボタン
+  const allBtn = document.createElement('button');
+  allBtn.textContent = 'すべて';
+  allBtn.style.margin = '4px';
+  allBtn.style.padding = '6px 12px';
+  allBtn.style.border = '1px solid #aaa';
+  allBtn.style.borderRadius = '4px';
+  allBtn.style.background = '#e0e0e0';
+  allBtn.style.cursor = 'pointer';
+  allBtn.onclick = () => {
+    renderMarkers(selectedCategory, '', map);
+  };
+  cityFilterContainer.appendChild(allBtn);
+
+  // 各市ボタン
+  cities.forEach(city => {
+    const btn = document.createElement('button');
+    btn.textContent = city;
+    btn.style.margin = '4px';
+    btn.style.padding = '6px 12px';
+    btn.style.border = '1px solid #aaa';
+    btn.style.borderRadius = '4px';
+    btn.style.background = '#f5f5f5';
+    btn.style.cursor = 'pointer';
+    btn.onclick = () => {
+      renderMarkers(selectedCategory, city, map);
+    };
+    cityFilterContainer.appendChild(btn);
+  });
+
+  // 初期はすべての市で表示
+  renderMarkers(selectedCategory, '', map);
+});
+
 
     } catch (err) {
       console.error("データ取得エラー:", err);
     }
   }
 
-  function renderMarkers(category, data, map) {
+  function renderMarkers(category, city, map) {
   allMarkers.forEach(marker => marker.setMap(null));
   allMarkers = [];
 
-  // 🔽 これを先に定義！
-  const filtered = category === 'all'
-    ? data
-    : data.filter(i => i.sheet === category);
+  const filtered = fullData.filter(item =>
+    item.sheet === category && (!city || item.city === city)
+  );
 
   filtered.forEach(item => {
     const isMobile = window.innerWidth <= 768;
@@ -213,6 +251,8 @@ if (isMeishi) {
     <select id="categoryFilter">
       <option>カテゴリを選択</option>
     </select>
+     <div id="cityFilterContainer" style="margin-top: 10px;"></div>
+</div>
   </div>
     <div id="map"></div>
     <script
