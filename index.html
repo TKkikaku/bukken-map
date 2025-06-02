@@ -145,10 +145,7 @@
     const marker = new google.maps.Marker({
       position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
       map,
-      icon: {
-        url: iconMap[item.sheet] || iconMap["その他"],
-        scaledSize: new google.maps.Size(isMobile ? 80 : 32, isMobile ? 80 : 32),
-      },
+      
       title: item.name,
     });
 
