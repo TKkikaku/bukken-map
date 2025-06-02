@@ -183,11 +183,27 @@
             if (currentInfoWindow) currentInfoWindow.close();
             infowindow.open({ anchor: marker, map });
             currentInfoWindow = infowindow;
+          
+          google.maps.event.addListenerOnce(infowindow, 'domready', () => {
+              const infoWindowContent = document.querySelector('.info-window'); // .info-windowクラスを持つ要素を取得
+              if (infoWindowContent && isMobile) { // モバイルの場合のみ適用
+                infoWindowContent.style.fontSize = '38px';
+                infoWindowContent.style.lineHeight = '2.2em';
+                // infoWindowContent内の他の要素も大きくしたい場合は、セレクタを調整してループ処理を追加
+                const children = infoWindowContent.querySelectorAll('*');
+                children.forEach(child => {
+                  child.style.fontSize = '38px';
+                  child.style.lineHeight = '2.2em';
+                });
+              }
+              }
+            });
+            // --- ここまで追加または変更 ---
           });
 
           allMarkers.push(marker);
-        });
-      }
+        };
+
     </script>
   </head>
   <body>
