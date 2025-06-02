@@ -37,16 +37,10 @@
         margin-top: 10px;
       }
 
-      .info-window {
-        font-size: 14px;
-        line-height: 1.6em;
-        max-width: 300px;
-      }
-
       @media (max-width: 768px) {
-        .gm-style-iw, .info-window, .info-window * {
+        .info-window, .info-window * {
           font-size: 38px !important;
-          line-height: 2.0em;
+          line-height: 2.0em !important;
         }
         .info-window a {
           font-size: 38px !important;
@@ -58,10 +52,14 @@
         }
       }
     </style>
+
     <script>
+      let map;
       let allMarkers = [];
       let currentInfoWindow = null;
       let fullData = [];
+
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
       const iconMap = {
         "土地": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
@@ -73,9 +71,9 @@
       };
 
       async function initMap() {
-        const map = new google.maps.Map(document.getElementById("map"), {
+        map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 26.2124, lng: 127.6809 },
-          zoom: 9,
+          zoom: isMobile ? 14 : 9,
         });
 
         try {
@@ -95,23 +93,21 @@
             if (!selectedCategory) return;
 
             const cityOrder = [
-  "名護市", "恩納村", "金武町", "宜野座村", "本部町", "今帰仁村", "大宜味村", "国頭村", "東村", // 北部
-  "沖縄市", "浦添市", "宜野湾市", "うるま市", "読谷村", "西原町", "北谷町", "中城村", "北中城村", "嘉手納町", // 中部
-  "那覇市", "豊見城市", "糸満市", "南風原町", "南城市", "与那原町", "八重瀬町", // 南部
-  "石垣市", "宮古島市", "その他" // 離島
-];
-
+              "名護市", "恩納村", "金武町", "宜野座村", "本部町", "今帰仁村", "大宜味村", "国頭村", "東村", // 北部
+              "沖縄市", "浦添市", "宜野湾市", "うるま市", "読谷村", "西原町", "北谷町", "中城村", "北中城村", "嘉手納町", // 中部
+              "那覇市", "豊見城市", "糸満市", "南風原町", "南城市", "与那原町", "八重瀬町", // 南部
+              "石垣市", "宮古島市", "その他" // 離島
+            ];
 
             const cities = [...new Set(
               data.filter(d => d.sheet === selectedCategory).map(d => d.city || '未設定')
             )];
 
             cities.sort((a, b) => {
-  const indexA = cityOrder.indexOf(a);
-  const indexB = cityOrder.indexOf(b);
-  return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-});
-
+              const indexA = cityOrder.indexOf(a);
+              const indexB = cityOrder.indexOf(b);
+              return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+            });
 
             cityFilterContainer.innerHTML = '<strong>市を選択：</strong><br>';
 
@@ -119,18 +115,18 @@
             allBtn.textContent = 'すべて';
             styleButton(allBtn);
             allBtn.style.background = '#e0e0e0';
-            allBtn.onclick = () => renderMarkers(selectedCategory, '', map);
+            allBtn.onclick = () => renderMarkers(selectedCategory, '');
             cityFilterContainer.appendChild(allBtn);
 
             cities.forEach(city => {
               const btn = document.createElement('button');
               btn.textContent = city;
               styleButton(btn);
-              btn.onclick = () => renderMarkers(selectedCategory, city, map);
+              btn.onclick = () => renderMarkers(selectedCategory, city);
               cityFilterContainer.appendChild(btn);
             });
 
-            renderMarkers(selectedCategory, '', map);
+            renderMarkers(selectedCategory, '');
           });
 
         } catch (err) {
@@ -147,7 +143,7 @@
         btn.style.cursor = 'pointer';
       }
 
-      function renderMarkers(category, city, map) {
+      function renderMarkers(category, city) {
         allMarkers.forEach(marker => marker.setMap(null));
         allMarkers = [];
 
@@ -166,53 +162,18 @@
             title: item.name,
           });
 
-const zoomLevel = window.matchMedia("(max-width: 768px)").matches ? 14 : 9;
-
-const map = new google.maps.Map(document.getElementById("map"), {
-  center: { lat: 26.2124, lng: 127.6809 },
-  zoom: zoomLevel,
-});
-
-filtered.forEach(item => {
-  const marker = new google.maps.Marker({
-    position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
-    map,
-    icon: {
-      url: iconMap[item.sheet] || iconMap["その他"],
-      scaledSize: new google.maps.Size(32, 32)
-    },
-    title: item.name,
-  });
-
-  const content = `
-    <div style="
-      font-size: ${isMobile ? '38px' : '16px'};
-      line-height: ${isMobile ? '2.2em' : '1.6em'};
-      padding: ${isMobile ? '24px' : '12px'};
-      max-width: 95vw;
-      background-color: white;
-      border: 2px solid #ccc;
-    ">
-      <div><strong>【${item.sheet}】</strong></div>
-      <div>${item.name}</div>
-      <div>価格：${item.price || '---'} 万円</div>
-      <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
-      ${item.pdf ? `<div><a href="${item.pdf}" target="_blank" style="font-size: ${isMobile ? '38px' : '14px'};">📄 PDFを見る</a></div>` : ''}
-    </div>
-  `;
-
-  const infowindow = new google.maps.InfoWindow({ content });
-
-  marker.addListener("click", () => {
-    if (currentInfoWindow) currentInfoWindow.close();
-    infowindow.open({ anchor: marker, map });
-    currentInfoWindow = infowindow;
-  });
-
-  allMarkers.push(marker);
-});
+          const content = `
+            <div class="info-window">
+              <div><strong>【${item.sheet}】</strong></div>
+              <div>${item.name}</div>
+              <div>価格：${item.price || '---'} 万円</div>
+              <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
+              ${item.pdf ? `<div><a href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
+            </div>
+          `;
 
           const infowindow = new google.maps.InfoWindow({ content });
+
           marker.addListener("click", () => {
             if (currentInfoWindow) currentInfoWindow.close();
             infowindow.open({ anchor: marker, map });
