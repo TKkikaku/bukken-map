@@ -116,6 +116,8 @@
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
       const cityFilterContainer = document.getElementById('cityFilterContainer');
+      console.log('cityFilterContainer:', cityFilterContainer);
+
 
 categoryFilter.addEventListener('change', (e) => {
   const selectedCategory = e.target.value;
