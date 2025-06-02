@@ -162,12 +162,13 @@
 
         const content = `
           <div class="info-window">
-            <div><strong>【${item.sheet}】</strong></div>
-            <div>${item.name}</div>
-            <div>価格：${item.price || '---'} 万円</div>
-            <div>市：${item.city || '---'}／町：${item.town || '---'}</div>
-            ${item.pdf ? `<div><a href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
-          </div>
+    <div><strong>【${item.sheet}】</strong></div>
+    <div>${item.name}</div>
+    <div>価格：${item.price || '---'} 万円</div>
+    <div>坪単価：${item.unit || '---'}</div> <!-- F列 -->
+    <div>備考：${item.note || '---'}</div>    <!-- J列 -->
+    ${item.pdf ? `<div><a href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
+  </div>
         `;
 
         const infowindow = new google.maps.InfoWindow({ content });
