@@ -191,6 +191,7 @@ function checkPass() {
     <div>${item.name}</div>
     <div>価格：${item.price || '---'} 万円</div>
     <div>坪単価：${item.unit || '---'}万円</div> <!-- F列 -->
+    <div>紹介元：${item.source || '---'}</div>
     <div>備考：${item.note || '---'}</div>    <!-- J列 -->
     ${item.pdf ? `<div><a href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
   </div>
