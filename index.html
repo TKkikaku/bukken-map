@@ -119,6 +119,7 @@
 
 categoryFilter.addEventListener('change', (e) => {
   const selectedCategory = e.target.value;
+  if (!selectedCategory) return;
 
   // 市一覧を取得（空でない値だけ）
   const cities = [...new Set(data.filter(d => d.sheet === selectedCategory).map(d => d.city))].filter(Boolean);
