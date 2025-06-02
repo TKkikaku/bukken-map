@@ -146,6 +146,16 @@ map.addListener('click', () => {
         console.error("データ取得エラー:", err);
       }
     }
+function checkPass() {
+  const input = document.getElementById('passInput').value;
+  const correct = "Tkkikaku1212!"; // ←ここがパスコード！
+  if (input === correct) {
+    document.getElementById('loginScreen').style.display = 'none';
+    initMap(); // ←ここで初めて地図を表示
+  } else {
+    document.getElementById('errorMsg').textContent = "パスコードが違います";
+  }
+}
 
     function styleButton(btn) {
       btn.style.margin = '4px';
@@ -222,8 +232,24 @@ map.addListener('click', () => {
     <div id="cityFilterContainer" class="hidden"></div>
   </div>
   <div id="map"></div>
+  <div id="loginScreen" style="
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  flex-direction: column;
+">
+  <h2>パスコードを入力してください</h2>
+  <input type="password" id="passInput" style="font-size: 24px; padding: 10px; margin: 10px;">
+  <button onclick="checkPass()" style="font-size: 20px; padding: 8px 16px;">ログイン</button>
+  <div id="errorMsg" style="color: red; margin-top: 10px;"></div>
+</div>
+
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA&callback=initMap"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA"
     async defer
   ></script>
 </body>
