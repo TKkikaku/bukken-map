@@ -94,9 +94,24 @@
             const selectedCategory = e.target.value;
             if (!selectedCategory) return;
 
+            const cityOrder = [
+  "名護市", "恩納村", "金武町", "宜野座村", "本部町", "今帰仁村", "大宜味村", "国頭村", "東村", // 北部
+  "沖縄市", "浦添市", "宜野湾市", "うるま市", "読谷村", "西原町", "北谷町", "中城村", "北中城村", "嘉手納町", // 中部
+  "那覇市", "豊見城市", "糸満市", "南風原町", "南城市", "与那原町", "八重瀬町", // 南部
+  "石垣市", "宮古島市", "その他" // 離島
+];
+
+
             const cities = [...new Set(
               data.filter(d => d.sheet === selectedCategory).map(d => d.city || '未設定')
             )];
+
+            cities.sort((a, b) => {
+  const indexA = cityOrder.indexOf(a);
+  const indexB = cityOrder.indexOf(b);
+  return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+});
+
 
             cityFilterContainer.innerHTML = '<strong>市を選択：</strong><br>';
 
