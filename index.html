@@ -165,8 +165,13 @@
             },
             title: item.name,
           });
-          
-const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+const zoomLevel = window.matchMedia("(max-width: 768px)").matches ? 14 : 9;
+
+const map = new google.maps.Map(document.getElementById("map"), {
+  center: { lat: 26.2124, lng: 127.6809 },
+  zoom: zoomLevel,
+});
 
 filtered.forEach(item => {
   const marker = new google.maps.Marker({
