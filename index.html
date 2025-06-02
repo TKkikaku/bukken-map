@@ -181,10 +181,6 @@ const content = `
     ${item.pdf ? `<div><a href="${item.pdf}" target="_blank" style="font-size: 42px !important;">📄 PDFを見る</a></div>` : ''}
   </div>
 `;
-
-}
-
-
           const infowindow = new google.maps.InfoWindow({ content });
           marker.addListener("click", () => {
             if (currentInfoWindow) currentInfoWindow.close();
