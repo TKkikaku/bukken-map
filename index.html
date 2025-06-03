@@ -189,8 +189,8 @@ function checkPass() {
   <div class="info-window">
     <div><strong>【名刺】</strong></div>
     <div>会社名：${item.name || '---'}</div>
-    <div>担当者名：${item.person || '---'}</div>
-    <div>担当TEL：<a href="tel:${item.tel}">${item.tel || '---'}</a></div>
+    <div>担当者名：${item.repName || '---'}</div>
+    <div>担当TEL：<a href="tel:${item.repTel}">${item.repTel || '---'}</a></div>
     <div>備考：${item.note || '---'}</div>
     ${item.pdf ? `<div><a href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
   </div>
