@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2196f3" />
 
   <title>不動産マップ</title>
   <style>
@@ -234,6 +236,18 @@ function checkPass() {
     }
   </script>
 </head>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .register("service-worker.js")
+      .then((reg) => {
+        console.log("Service Worker registered", reg);
+      })
+      .catch((err) => {
+        console.error("Service Worker registration failed", err);
+      });
+  }
+</script>
 <body>
   <div id="categoryBar">
     <select id="categoryFilter">
@@ -258,7 +272,7 @@ function checkPass() {
   <div id="errorMsg" style="color: red; margin-top: 10px;"></div>
 </div>
 
-  <script
+  <script>
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYQnbLmcGyA0-2U5eEuLxYYeSDEn9z_nA"
     async defer
   ></script>
