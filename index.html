@@ -70,6 +70,18 @@
     let currentInfoWindow = null;
     let fullData = [];
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    let showContracted = true; // 初期状態：成約済みも表示する
+
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("toggleContractBtn");
+  toggleBtn.addEventListener("click", () => {
+    showContracted = !showContracted;
+    toggleBtn.textContent = showContracted ? "成約済みを除外" : "成約済みを表示";
+    const selectedCategory = document.getElementById("categoryFilter").value;
+    renderMarkers(selectedCategory, '');
+  });
+});
+
 
     const iconMap = {
       "土地": "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
@@ -173,8 +185,11 @@ function checkPass() {
       allMarkers = [];
 
       const filtered = fullData.filter(item =>
-        item.sheet === category && (!city || item.city === city)
-      );
+  item.sheet === category &&
+  (!city || item.city === city) &&
+  (showContracted || !item.status || item.status.trim() !== "成約済み")
+);
+
 
       filtered.forEach(item => {
         const marker = new google.maps.Marker({
@@ -250,6 +265,9 @@ function checkPass() {
 </script>
 <body>
   <div id="categoryBar">
+    <!-- ① ボタンを追加 -->
+<button id="toggleContractBtn" style="margin: 10px; padding: 6px 12px; font-size: 16px;">成約済みを除外</button>
+
     <select id="categoryFilter">
       <option>カテゴリを選択</option>
     </select>
