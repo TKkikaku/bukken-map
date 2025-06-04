@@ -196,9 +196,12 @@ function checkPass() {
           position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
           map,
           icon: {
-            url: iconMap[item.sheet] || iconMap["その他"],
-            scaledSize: new google.maps.Size(32, 32)
-          },
+  url: (item.status && item.status.trim() === "成約済み")
+    ? "http://maps.google.com/mapfiles/ms/icons/grey-dot.png"
+    : (iconMap[item.sheet] || iconMap["その他"]),
+  scaledSize: new google.maps.Size(32, 32)
+},
+
           title: item.name,
         });
 
