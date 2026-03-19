@@ -626,6 +626,10 @@
       let total = 0;
       let matched = false;
 
+      // 文字コードデバッグ（確認後削除）
+      const codes = Array.from(s).map(c => `${c}=U+${c.charCodeAt(0).toString(16).toUpperCase()}`);
+      console.log('[parsePrice]', s, '→', codes.join(' '));
+
       const hasOku = s.indexOf('\u5104') !== -1; // 億 = U+5104
       const hasMan = s.indexOf('\u4e07') !== -1; // 万 = U+4E07
 
