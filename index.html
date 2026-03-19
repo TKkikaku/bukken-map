@@ -10,89 +10,180 @@
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
-        .catch(err => console.error("Service Worker registration failed", err));
+        .catch(err => console.error("SW registration failed", err));
     }
   </script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    body { font-family: 'Hiragino Sans', 'Meiryo', Arial, sans-serif; }
     #map { height: 100vh; width: 100%; }
 
-    select#categoryFilter {
-      width: 100%;
-      box-sizing: border-box;
-      font-size: 18px;
+    /* ─── フィルターバー ─── */
+    #categoryBar {
+      position: absolute;
+      top: 10px; left: 10px; right: 10px;
+      z-index: 999;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    /* 1行目：カテゴリ＋ボタン群 */
+    #topRow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       padding: 10px 12px;
-      border-radius: 4px;
-      background-color: #fff;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    select#categoryFilter {
+      flex: 1;
+      font-size: 15px;
+      padding: 8px 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
+      background-color: #fff;
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 24px;
+      background-position: right 8px center;
+      background-size: 20px;
+      cursor: pointer;
     }
 
-    #categoryBar {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      z-index: 999;
-      background: white;
-      padding: 12px 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      border-radius: 8px;
-    }
-
-    #topControls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    #toggleContractBtn {
+    .bar-btn {
       flex-shrink: 0;
-      padding: 8px 14px;
+      padding: 8px 12px;
       font-size: 13px;
-      border: 1px solid #1976d2;
-      border-radius: 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
       background: white;
-      color: #1976d2;
       cursor: pointer;
       white-space: nowrap;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
-    #toggleContractBtn:hover { background: #e3f2fd; }
-    #toggleContractBtn.active { background: #1976d2; color: white; }
+    .bar-btn:hover { background: #f5f5f5; }
+    .bar-btn.active { background: #1976d2; color: white; border-color: #1976d2; }
 
-    #cityFilterContainer { margin-top: 8px; }
-    #cityFilterContainer.hidden { display: none; }
+    #countBadge {
+      flex-shrink: 0;
+      font-size: 12px;
+      color: #555;
+      white-space: nowrap;
+      min-width: 40px;
+      text-align: right;
+    }
 
-    /* ローディングスピナー */
+    /* ローディング */
     #dataLoader {
       display: none;
-      text-align: center;
-      padding: 6px;
+      padding: 8px 12px;
       font-size: 13px;
       color: #666;
+      border-bottom: 1px solid #f0f0f0;
     }
-    #dataLoader.visible { display: block; }
+    #dataLoader.visible { display: flex; align-items: center; gap: 8px; }
     .spinner {
-      display: inline-block;
       width: 16px; height: 16px;
-      border: 2px solid #ccc;
+      border: 2px solid #ddd;
       border-top-color: #1976d2;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 6px;
+      flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* 情報ウィンドウ */
+    /* 詳細フィルターパネル */
+    #detailPanel {
+      display: none;
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fafafa;
+    }
+    #detailPanel.open { display: block; }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-row:last-child { margin-bottom: 0; }
+    .filter-label {
+      font-size: 12px;
+      color: #666;
+      min-width: 64px;
+      flex-shrink: 0;
+    }
+    .filter-input {
+      width: 90px;
+      padding: 6px 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .filter-text-input {
+      flex: 1;
+      min-width: 120px;
+      padding: 6px 8px;
+      font-size: 13px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .filter-unit { font-size: 12px; color: #888; }
+    .filter-sep  { font-size: 13px; color: #aaa; }
+
+    #excludeContractedLabel {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      color: #444;
+      cursor: pointer;
+    }
+    #excludeContractedLabel input { cursor: pointer; width: 15px; height: 15px; }
+
+    #resetBtn {
+      margin-top: 2px;
+      padding: 6px 14px;
+      font-size: 12px;
+      border: 1px solid #e53935;
+      border-radius: 5px;
+      background: white;
+      color: #e53935;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #resetBtn:hover { background: #ffebee; }
+
+    /* 市フィルター */
+    #cityFilterContainer {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    #cityFilterContainer.hidden { display: none; }
+    #cityFilterContainer strong { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
+
+    .city-btn {
+      display: inline-block;
+      margin: 3px;
+      padding: 5px 11px;
+      border: 1px solid #ccc;
+      border-radius: 14px;
+      background: #f5f5f5;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .city-btn:hover { background: #e3f2fd; border-color: #90caf9; }
+    .city-btn.active { background: #1976d2; color: white; border-color: #1976d2; }
+
+    /* ─── 情報ウィンドウ ─── */
     .info-window {
       font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
       max-width: 300px;
@@ -123,7 +214,6 @@
       align-items: baseline;
       margin-bottom: 6px;
       font-size: 13px;
-      color: #444;
     }
     .info-window-label {
       font-size: 11px;
@@ -157,15 +247,54 @@
 
     @media (max-width: 768px) {
       .info-window { max-width: 92vw; }
-      .info-window-header { font-size: 3.8vw; padding: 12px 16px; }
+      .info-window-header { font-size: 3.8vw; }
       .info-window-title  { font-size: 4.2vw; }
-      .info-window-row    { font-size: 3.8vw; margin-bottom: 8px; }
+      .info-window-row    { font-size: 3.8vw; }
       .info-window-label  { font-size: 3.2vw; }
       .info-window-price  { font-size: 5.5vw; }
       .info-window-pdf    { font-size: 3.5vw; padding: 8px 18px; }
     }
 
-    /* ログイン画面 */
+    /* ─── 凡例 ─── */
+    #legendToggle {
+      position: fixed;
+      bottom: 24px; right: 12px;
+      z-index: 998;
+      padding: 8px 14px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    #legendPanel {
+      display: none;
+      position: fixed;
+      bottom: 60px; right: 12px;
+      z-index: 998;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      padding: 12px 16px;
+      min-width: 150px;
+    }
+    #legendPanel.open { display: block; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .legend-item:last-child { margin-bottom: 0; }
+    .legend-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ─── ログイン画面 ─── */
     #loginScreen {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -184,16 +313,8 @@
       width: 90%;
       max-width: 360px;
     }
-    #loginBox h2 {
-      font-size: 20px;
-      color: #1976d2;
-      margin-bottom: 8px;
-    }
-    #loginBox p {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 20px;
-    }
+    #loginBox h2 { font-size: 20px; color: #1976d2; margin-bottom: 8px; }
+    #loginBox p  { font-size: 13px; color: #888; margin-bottom: 20px; }
     #passInput {
       width: 100%;
       font-size: 20px;
@@ -220,12 +341,7 @@
       transition: background 0.2s;
     }
     #loginBtn:hover { background: #1565c0; }
-    #errorMsg {
-      color: #e53935;
-      font-size: 13px;
-      margin-top: 10px;
-      min-height: 18px;
-    }
+    #errorMsg { color: #e53935; font-size: 13px; margin-top: 10px; min-height: 18px; }
   </style>
 </head>
 <body>
@@ -241,62 +357,105 @@
     </div>
   </div>
 
-  <!-- カテゴリ・市フィルター -->
+  <!-- フィルターバー -->
   <div id="categoryBar">
-    <div id="topControls">
-      <button id="toggleContractBtn">成約済みを除外</button>
+
+    <!-- 1行目 -->
+    <div id="topRow">
       <select id="categoryFilter">
         <option value="">カテゴリを選択</option>
       </select>
+      <button class="bar-btn" id="detailToggle">絞り込み ▾</button>
+      <span id="countBadge"></span>
     </div>
-    <div id="dataLoader"><span class="spinner"></span>データを読み込み中...</div>
-    <div id="cityFilterContainer" class="hidden"></div>
+
+    <!-- ローディング -->
+    <div id="dataLoader">
+      <span class="spinner"></span>データを読み込み中...
+    </div>
+
+    <!-- 詳細フィルターパネル -->
+    <div id="detailPanel">
+      <div class="filter-row">
+        <span class="filter-label">価格帯</span>
+        <input type="number" class="filter-input" id="priceMin" placeholder="下限" min="0">
+        <span class="filter-unit">万円</span>
+        <span class="filter-sep">〜</span>
+        <input type="number" class="filter-input" id="priceMax" placeholder="上限" min="0">
+        <span class="filter-unit">万円</span>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">キーワード</span>
+        <input type="text" class="filter-text-input" id="keywordInput" placeholder="物件名・備考・紹介元">
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">状況</span>
+        <label id="excludeContractedLabel">
+          <input type="checkbox" id="excludeContracted"> 成約済みを除外
+        </label>
+      </div>
+      <div class="filter-row" style="justify-content: flex-end;">
+        <button id="resetBtn">フィルターをリセット</button>
+      </div>
+    </div>
+
+    <!-- 市フィルター -->
+    <div id="cityFilterContainer" class="hidden">
+      <strong>エリアを選択：</strong>
+    </div>
+
   </div>
 
   <!-- 地図 -->
   <div id="map"></div>
 
-  <script>
-    let map;
-    let allMarkers = [];
-    let currentInfoWindow = null;
-    let fullData = [];
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    let showContracted = true;
+  <!-- 凡例 -->
+  <button id="legendToggle">凡例 ▾</button>
+  <div id="legendPanel">
+    <div class="legend-item"><div class="legend-dot" style="background:#43a047"></div>土地</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1e88e5"></div>戸建て</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8e24aa"></div>マンション</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div>外人住宅</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb8c00"></div>民泊運営物件</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#00897b"></div>名刺</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e53935"></div>その他</div>
+  </div>
 
-    // Enterキーでログイン
+  <script>
+    // ─── 状態 ───
+    let map, fullData = [], allMarkers = [], currentInfoWindow = null;
+    let currentCategory = '';
+    let currentCity     = '';
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+    const iconMap = {
+      "土地":        "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+      "戸建て":      "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+      "マンション":  "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+      "外人住宅":    "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+      "民泊運営物件":"https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+      "その他":      "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+    };
+    const headerColorMap = {
+      "土地":        "#43a047",
+      "戸建て":      "#1e88e5",
+      "マンション":  "#8e24aa",
+      "外人住宅":    "#f9a825",
+      "民泊運営物件":"#fb8c00",
+      "名刺":        "#00897b",
+      "その他":      "#e53935"
+    };
+    const cityOrder = [
+      "名護市","恩納村","金武町","宜野座村","本部町","今帰仁村","大宜味村","国頭村","東村",
+      "沖縄市","浦添市","宜野湾市","うるま市","読谷村","西原町","北谷町","中城村","北中城村","嘉手納町",
+      "那覇市","豊見城市","糸満市","南風原町","南城市","与那原町","八重瀬町",
+      "石垣市","宮古島市","その他"
+    ];
+
+    // ─── ログイン ───
     document.getElementById('passInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') checkPass();
     });
-
-    // 成約済みトグル
-    document.getElementById('toggleContractBtn').addEventListener('click', () => {
-      showContracted = !showContracted;
-      const btn = document.getElementById('toggleContractBtn');
-      btn.textContent = showContracted ? '成約済みを除外' : '成約済みを表示';
-      btn.classList.toggle('active', !showContracted);
-      const selectedCategory = document.getElementById('categoryFilter').value;
-      if (selectedCategory) renderMarkers(selectedCategory, '');
-    });
-
-    const iconMap = {
-      "土地":       "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-      "戸建て":     "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-      "マンション": "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
-      "外人住宅":   "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-      "民泊運営物件":"https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-      "その他":     "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
-    };
-
-    const headerColorMap = {
-      "土地":       "#43a047",
-      "戸建て":     "#1e88e5",
-      "マンション": "#8e24aa",
-      "外人住宅":   "#f9a825",
-      "民泊運営物件":"#fb8c00",
-      "名刺":       "#00897b",
-      "その他":     "#e53935"
-    };
 
     function checkPass() { /* password removed from history */ } else {
         document.getElementById('errorMsg').textContent = "パスコードが違います";
@@ -304,117 +463,199 @@
       }
     }
 
+    // ─── 詳細フィルタートグル ───
+    document.getElementById('detailToggle').addEventListener('click', () => {
+      const panel = document.getElementById('detailPanel');
+      const btn   = document.getElementById('detailToggle');
+      const open  = panel.classList.toggle('open');
+      btn.textContent = open ? '絞り込み ▴' : '絞り込み ▾';
+      btn.classList.toggle('active', open);
+    });
+
+    // ─── 詳細フィルター変更時 ───
+    ['priceMin', 'priceMax', 'keywordInput'].forEach(id => {
+      document.getElementById(id).addEventListener('input', renderMarkers);
+    });
+    document.getElementById('excludeContracted').addEventListener('change', renderMarkers);
+
+    // ─── リセット ───
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.getElementById('priceMin').value       = '';
+      document.getElementById('priceMax').value       = '';
+      document.getElementById('keywordInput').value   = '';
+      document.getElementById('excludeContracted').checked = false;
+      document.getElementById('categoryFilter').value = '';
+      currentCategory = '';
+      currentCity     = '';
+      document.getElementById('cityFilterContainer').classList.add('hidden');
+      document.getElementById('detailPanel').classList.remove('open');
+      document.getElementById('detailToggle').textContent = '絞り込み ▾';
+      document.getElementById('detailToggle').classList.remove('active');
+      renderMarkers();
+    });
+
+    // ─── 凡例 ───
+    document.getElementById('legendToggle').addEventListener('click', () => {
+      const panel = document.getElementById('legendPanel');
+      const open  = panel.classList.toggle('open');
+      document.getElementById('legendToggle').textContent = open ? '凡例 ▴' : '凡例 ▾';
+    });
+
+    // 地図クリックで凡例・市フィルターを閉じる
+    function closeOverlays() {
+      document.getElementById('cityFilterContainer').classList.add('hidden');
+    }
+
+    // ─── 価格パーサー ───
+    function parsePrice(str) {
+      if (!str) return null;
+      const n = parseFloat(String(str).replace(/[,，\s万円]/g, ''));
+      return isNaN(n) ? null : n;
+    }
+
+    // ─── 件数更新 ───
+    function updateCount(n) {
+      const badge = document.getElementById('countBadge');
+      badge.textContent = currentCategory ? `${n}件` : '';
+    }
+
+    // ─── 地図初期化 ───
     async function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 26.2124, lng: 127.6809 },
         zoom: isMobile ? 14 : 9,
       });
+      map.addListener('dragstart', closeOverlays);
+      map.addListener('click',     closeOverlays);
 
-      map.addListener('dragstart', () => {
-        document.getElementById('cityFilterContainer').classList.add('hidden');
-      });
-      map.addListener('click', () => {
-        document.getElementById('cityFilterContainer').classList.add('hidden');
-      });
-
-      // データ取得
       const loader = document.getElementById('dataLoader');
       loader.classList.add('visible');
 
       try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwuYJQ7Oxjh0cyDDjmoEjFBhSbmUSZ1cO7uw0ONdnWojfQD36L8IVrMAa8O07haB2_Yqw/exec');
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        fullData = await response.json();
+        const res = await fetch('https://script.google.com/macros/s/AKfycbwuYJQ7Oxjh0cyDDjmoEjFBhSbmUSZ1cO7uw0ONdnWojfQD36L8IVrMAa8O07haB2_Yqw/exec');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        fullData = await res.json();
       } catch (err) {
         loader.innerHTML = '⚠️ データの取得に失敗しました。再読み込みしてください。';
         console.error("データ取得エラー:", err);
         return;
-      } finally {
-        loader.classList.remove('visible');
       }
+      loader.classList.remove('visible');
 
+      // カテゴリ選択肢を生成
       const categoryFilter = document.getElementById('categoryFilter');
-      const cityFilterContainer = document.getElementById('cityFilterContainer');
-
-      const categories = [...new Set(fullData.map(item => item.sheet))].filter(Boolean);
+      const categories = [...new Set(fullData.map(d => d.sheet))].filter(Boolean);
       categoryFilter.innerHTML = '<option value="">カテゴリを選択</option>' +
-        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-
-      const cityOrder = [
-        "名護市","恩納村","金武町","宜野座村","本部町","今帰仁村","大宜味村","国頭村","東村",
-        "沖縄市","浦添市","宜野湾市","うるま市","読谷村","西原町","北谷町","中城村","北中城村","嘉手納町",
-        "那覇市","豊見城市","糸満市","南風原町","南城市","与那原町","八重瀬町",
-        "石垣市","宮古島市","その他"
-      ];
+        categories.map(c => `<option value="${c}">${c}</option>`).join('');
 
       categoryFilter.addEventListener('change', e => {
-        const selectedCategory = e.target.value;
-        if (!selectedCategory) {
-          cityFilterContainer.classList.add('hidden');
+        currentCategory = e.target.value;
+        currentCity     = '';
+
+        if (!currentCategory) {
+          document.getElementById('cityFilterContainer').classList.add('hidden');
+          renderMarkers();
           return;
         }
-
-        const cities = [...new Set(
-          fullData.filter(d => d.sheet === selectedCategory).map(d => d.city || '未設定')
-        )].sort((a, b) => {
-          const ia = cityOrder.indexOf(a), ib = cityOrder.indexOf(b);
-          return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-        });
-
-        cityFilterContainer.innerHTML = '<strong>市を選択：</strong><br>';
-
-        const allBtn = document.createElement('button');
-        allBtn.textContent = 'すべて';
-        styleButton(allBtn);
-        allBtn.style.background = '#e0e0e0';
-        allBtn.onclick = () => renderMarkers(selectedCategory, '');
-        cityFilterContainer.appendChild(allBtn);
-
-        cities.forEach(city => {
-          const btn = document.createElement('button');
-          btn.textContent = city;
-          styleButton(btn);
-          btn.onclick = () => renderMarkers(selectedCategory, city);
-          cityFilterContainer.appendChild(btn);
-        });
-
-        cityFilterContainer.classList.remove('hidden');
-        renderMarkers(selectedCategory, '');
+        buildCityButtons(currentCategory);
+        renderMarkers(true);
       });
     }
 
-    function styleButton(btn) {
-      btn.style.margin = '4px';
-      btn.style.padding = '6px 12px';
-      btn.style.border = '1px solid #aaa';
-      btn.style.borderRadius = '4px';
-      btn.style.background = '#f5f5f5';
-      btn.style.cursor = 'pointer';
+    // ─── 市ボタン生成 ───
+    function buildCityButtons(category) {
+      const container = document.getElementById('cityFilterContainer');
+      const cities = [...new Set(
+        fullData.filter(d => d.sheet === category).map(d => d.city || '未設定')
+      )].sort((a, b) => {
+        const ia = cityOrder.indexOf(a), ib = cityOrder.indexOf(b);
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      });
+
+      container.innerHTML = '<strong>エリアを選択：</strong>';
+
+      const allBtn = document.createElement('button');
+      allBtn.textContent = 'すべて';
+      allBtn.className = 'city-btn active';
+      allBtn.dataset.city = '';
+      container.appendChild(allBtn);
+
+      cities.forEach(city => {
+        const btn = document.createElement('button');
+        btn.textContent = city;
+        btn.className = 'city-btn';
+        btn.dataset.city = city;
+        container.appendChild(btn);
+      });
+
+      container.classList.remove('hidden');
+
+      container.addEventListener('click', e => {
+        const btn = e.target.closest('.city-btn');
+        if (!btn) return;
+        container.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCity = btn.dataset.city;
+        renderMarkers(true);
+      });
     }
 
-    function renderMarkers(category, city) {
-      allMarkers.forEach(marker => marker.setMap(null));
+    // ─── マーカー描画 ───
+    function renderMarkers(autoFit = false) {
+      allMarkers.forEach(m => m.setMap(null));
       allMarkers = [];
 
-      const filtered = fullData.filter(item =>
-        item.sheet === category &&
-        (!city || item.city === city) &&
-        (showContracted || !item.status || item.status.trim() !== "成約済み")
-      );
+      if (!currentCategory) {
+        updateCount(0);
+        return;
+      }
+
+      const pMin = parseFloat(document.getElementById('priceMin').value) || 0;
+      const pMax = parseFloat(document.getElementById('priceMax').value) || Infinity;
+      const kw   = (document.getElementById('keywordInput').value || '').trim().toLowerCase();
+      const exContracted = document.getElementById('excludeContracted').checked;
+
+      const filtered = fullData.filter(item => {
+        if (item.sheet !== currentCategory) return false;
+        if (currentCity && item.city !== currentCity) return false;
+        if (exContracted && item.status && item.status.trim() === '成約済み') return false;
+        // キーワード
+        if (kw) {
+          const hay = [item.name, item.note, item.source, item.city].join(' ').toLowerCase();
+          if (!hay.includes(kw)) return false;
+        }
+        // 価格帯（名刺以外）
+        if (item.sheet !== '名刺' && (pMin > 0 || pMax < Infinity)) {
+          const price = parsePrice(item.price);
+          if (price !== null && (price < pMin || price > pMax)) return false;
+        }
+        return true;
+      });
+
+      updateCount(filtered.length);
+
+      const bounds = new google.maps.LatLngBounds();
+      let validBounds = false;
 
       filtered.forEach(item => {
+        const lat = parseFloat(item.lat);
+        const lng = parseFloat(item.lng);
+        if (isNaN(lat) || isNaN(lng)) return;
+
         const marker = new google.maps.Marker({
-          position: { lat: parseFloat(item.lat), lng: parseFloat(item.lng) },
+          position: { lat, lng },
           map,
           icon: {
             url: iconMap[item.sheet] || iconMap["その他"],
             scaledSize: new google.maps.Size(32, 32)
           },
-          title: item.name,
+          title: item.name || '',
         });
 
-        const headerColor = headerColorMap[item.sheet] || headerColorMap["その他"];
+        bounds.extend(marker.getPosition());
+        validBounds = true;
 
+        const headerColor = headerColorMap[item.sheet] || headerColorMap["その他"];
         const content = item.sheet === '名刺' ? `
           <div class="info-window">
             <div class="info-window-header" style="background:${headerColor};">🪪 名刺</div>
@@ -437,7 +678,7 @@
             <div class="info-window-header" style="background:${headerColor};">🏠 ${item.sheet}</div>
             <div class="info-window-body">
               <div class="info-window-title">${item.name || '---'}</div>
-              ${item.price ? `<div class="info-window-price">¥ ${item.price} 万円</div>` : ''}
+              ${item.price  ? `<div class="info-window-price">¥ ${item.price} 万円</div>` : ''}
               ${item.unit   ? `<div class="info-window-row"><span class="info-window-label">坪単価</span><span class="info-window-value">${item.unit} 万円</span></div>` : ''}
               ${item.source ? `<div class="info-window-row"><span class="info-window-label">紹介元</span><span class="info-window-value">${item.source}</span></div>` : ''}
               ${item.status ? `<div class="info-window-row"><span class="info-window-label">状況</span><span class="info-window-value">${item.status}</span></div>` : ''}
@@ -456,6 +697,16 @@
 
         allMarkers.push(marker);
       });
+
+      // カテゴリ・市変更時のみ自動ズーム
+      if (autoFit && validBounds) {
+        if (allMarkers.length === 1) {
+          map.setCenter(allMarkers[0].getPosition());
+          map.setZoom(15);
+        } else {
+          map.fitBounds(bounds, { top: 80, bottom: 20, left: 20, right: 20 });
+        }
+      }
     }
   </script>
 
