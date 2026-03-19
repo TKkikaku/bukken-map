@@ -760,6 +760,7 @@
 
     // ─── マーカー描画 ───
     function renderMarkers(autoFit = false) {
+      if (currentInfoWindow) { currentInfoWindow.close(); currentInfoWindow = null; }
       allMarkers.forEach(m => m.setMap(null));
       allMarkers = [];
       if (!currentCategory) { updateCount(0); return; }
