@@ -506,11 +506,33 @@
       document.getElementById('cityFilterContainer').classList.add('hidden');
     }
 
-    // ─── 価格パーサー ───
+    // ─── 価格パーサー（万円単位で返す）───
+    // 対応フォーマット例: "3000", "3,000", "3000万", "3000万円", "1億", "1億5000万"
     function parsePrice(str) {
-      if (!str) return null;
-      const n = parseFloat(String(str).replace(/[,，\s万円]/g, ''));
-      return isNaN(n) ? null : n;
+      if (!str && str !== 0) return null;
+      const s = String(str).replace(/[,，\s]/g, '');
+      let total = 0;
+      let matched = false;
+
+      // 億を含む場合
+      const okuMatch = s.match(/(\d+(?:\.\d+)?)億/);
+      if (okuMatch) {
+        total += parseFloat(okuMatch[1]) * 10000;
+        matched = true;
+      }
+
+      // 万（円）を含む場合、または億の後に続く数字
+      const manMatch = s.match(/(\d+(?:\.\d+)?)[万円]/);
+      if (manMatch) {
+        total += parseFloat(manMatch[1]);
+        matched = true;
+      } else if (!okuMatch) {
+        // 単なる数値（万円単位と想定）
+        const n = parseFloat(s);
+        if (!isNaN(n)) { total = n; matched = true; }
+      }
+
+      return matched ? total : null;
     }
 
     // ─── 件数更新 ───
@@ -610,8 +632,10 @@
         return;
       }
 
-      const pMin = parseFloat(document.getElementById('priceMin').value) || 0;
-      const pMax = parseFloat(document.getElementById('priceMax').value) || Infinity;
+      const pMinVal = document.getElementById('priceMin').value;
+      const pMaxVal = document.getElementById('priceMax').value;
+      const pMin = pMinVal !== '' ? parseFloat(pMinVal) : 0;
+      const pMax = pMaxVal !== '' ? parseFloat(pMaxVal) : Infinity;
       const kw   = (document.getElementById('keywordInput').value || '').trim().toLowerCase();
       const exContracted = document.getElementById('excludeContracted').checked;
 
