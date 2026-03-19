@@ -617,42 +617,40 @@
     }
 
     // ─── 価格パーサー（万円単位で返す）───
-    // 正規表現の文字コード依存を避けるため includes/split で処理
+    // charCodeAt ループで直接検索（文字列操作・正規表現・indexOf に依存しない）
     function parsePrice(str) {
       if (!str && str !== 0) return null;
-      const s = String(str).replace(/[,\uff0c\s\u3000]/g, '').trim();
-      if (!s) return null;
+      const raw = String(str);
 
-      let total = 0;
-      let matched = false;
-
-      // 文字コードデバッグ（確認後削除）
-      const codes = Array.from(s).map(c => `${c}=U+${c.charCodeAt(0).toString(16).toUpperCase()}`);
-      console.log('[parsePrice]', s, '→', codes.join(' '));
-
-      const hasOku = s.indexOf('\u5104') !== -1; // 億 = U+5104
-      const hasMan = s.indexOf('\u4e07') !== -1; // 万 = U+4E07
-
-      if (hasOku) {
-        const parts = s.split('\u5104');
-        const okuVal = parseFloat(parts[0]);
-        if (!isNaN(okuVal)) { total += okuVal * 10000; matched = true; }
-        // 億の後ろに万が続く場合（例：1億5000万）
-        if (parts[1] && parts[1].indexOf('\u4e07') !== -1) {
-          const manParts = parts[1].split('\u4e07');
-          const manVal = parseFloat(manParts[0]);
-          if (!isNaN(manVal)) total += manVal;
-        }
-      } else if (hasMan) {
-        const parts = s.split('\u4e07');
-        const manVal = parseFloat(parts[0]);
-        if (!isNaN(manVal)) { total = manVal; matched = true; }
-      } else {
-        const n = parseFloat(s);
-        if (!isNaN(n)) { total = n; matched = true; }
+      // 億(0x5104) と 万(0x4E07) の位置を charCodeAt で確実に探す
+      let okuPos = -1, manPos = -1;
+      for (let i = 0; i < raw.length; i++) {
+        const c = raw.charCodeAt(i);
+        if (c === 0x5104 && okuPos === -1) okuPos = i; // 億
+        if (c === 0x4E07 && manPos === -1) manPos = i; // 万
       }
 
-      return matched ? total : null;
+      if (okuPos >= 0) {
+        // 億の前の数字部分を取得
+        const okuNum = parseFloat(raw.slice(0, okuPos).replace(/[^0-9.]/g, ''));
+        if (isNaN(okuNum)) return null;
+        let total = okuNum * 10000;
+        // 億の後ろに万が続く場合（例：1億5000万）
+        if (manPos > okuPos) {
+          const manNum = parseFloat(raw.slice(okuPos + 1, manPos).replace(/[^0-9.]/g, ''));
+          if (!isNaN(manNum)) total += manNum;
+        }
+        return total;
+      }
+
+      if (manPos >= 0) {
+        const manNum = parseFloat(raw.slice(0, manPos).replace(/[^0-9.]/g, ''));
+        return isNaN(manNum) ? null : manNum;
+      }
+
+      // 単純な数値（万円単位と想定）
+      const n = parseFloat(raw.replace(/[^0-9.]/g, ''));
+      return isNaN(n) ? null : n;
     }
 
     // ─── 件数バッジ ───
