@@ -243,6 +243,8 @@
     .filter-text-input:focus { outline: none; border-color: var(--primary); }
     .filter-unit { font-size: 12px; color: var(--text-sub); }
     .filter-sep  { font-size: 13px; color: #d1d5db; font-weight: 300; }
+    .price-field { display: flex; flex-direction: column; gap: 3px; }
+    .price-field-label { font-size: 10px; font-weight: 700; color: var(--primary); letter-spacing: 0.04em; text-align: center; }
 
     /* トグルスイッチ */
     .toggle-wrap {
@@ -470,12 +472,17 @@
 
     <div id="detailPanel">
       <div class="filter-group">
-        <div class="filter-group-label">価格帯（万円）</div>
+        <div class="filter-group-label">価格帯</div>
         <div class="filter-controls">
-          <input type="number" class="filter-input" id="priceMin" placeholder="下限" min="0">
-          <span class="filter-sep">—</span>
-          <input type="number" class="filter-input" id="priceMax" placeholder="上限" min="0">
-          <span class="filter-unit">万円</span>
+          <div class="price-field">
+            <input type="number" class="filter-input" id="priceMin" placeholder="0" min="0">
+            <span class="price-field-label">万円 以上</span>
+          </div>
+          <span class="filter-sep">〜</span>
+          <div class="price-field">
+            <input type="number" class="filter-input" id="priceMax" placeholder="上限なし" min="0">
+            <span class="price-field-label">万円 以下</span>
+          </div>
         </div>
       </div>
       <div class="filter-group">
@@ -753,6 +760,7 @@
         }
         if (item.sheet !== '名刺' && (pMin > 0 || pMax < Infinity)) {
           const price = parsePrice(item.price);
+          console.log(`[価格フィルター] ${item.name}: 生データ="${item.price}" → 解析値=${price}万円, 条件: ${pMin}〜${pMax}万円`);
           if (price === null || price < pMin || price > pMax) return false;
         }
         return true;
