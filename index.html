@@ -617,18 +617,37 @@
     }
 
     // ─── 価格パーサー（万円単位で返す）───
+    // 正規表現の文字コード依存を避けるため includes/split で処理
     function parsePrice(str) {
       if (!str && str !== 0) return null;
-      const s = String(str).replace(/[,，\s]/g, '');
-      let total = 0, matched = false;
-      const okuMatch = s.match(/(\d+(?:\.\d+)?)億/);
-      if (okuMatch) { total += parseFloat(okuMatch[1]) * 10000; matched = true; }
-      const manMatch = s.match(/(\d+(?:\.\d+)?)[万円]/);
-      if (manMatch) { total += parseFloat(manMatch[1]); matched = true; }
-      else if (!okuMatch) {
+      const s = String(str).replace(/[,\uff0c\s\u3000]/g, '').trim();
+      if (!s) return null;
+
+      let total = 0;
+      let matched = false;
+
+      const hasOku = s.indexOf('\u5104') !== -1; // 億 = U+5104
+      const hasMan = s.indexOf('\u4e07') !== -1; // 万 = U+4E07
+
+      if (hasOku) {
+        const parts = s.split('\u5104');
+        const okuVal = parseFloat(parts[0]);
+        if (!isNaN(okuVal)) { total += okuVal * 10000; matched = true; }
+        // 億の後ろに万が続く場合（例：1億5000万）
+        if (parts[1] && parts[1].indexOf('\u4e07') !== -1) {
+          const manParts = parts[1].split('\u4e07');
+          const manVal = parseFloat(manParts[0]);
+          if (!isNaN(manVal)) total += manVal;
+        }
+      } else if (hasMan) {
+        const parts = s.split('\u4e07');
+        const manVal = parseFloat(parts[0]);
+        if (!isNaN(manVal)) { total = manVal; matched = true; }
+      } else {
         const n = parseFloat(s);
         if (!isNaN(n)) { total = n; matched = true; }
       }
+
       return matched ? total : null;
     }
 
