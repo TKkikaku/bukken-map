@@ -648,10 +648,10 @@
           const hay = [item.name, item.note, item.source, item.city].join(' ').toLowerCase();
           if (!hay.includes(kw)) return false;
         }
-        // 価格帯（名刺以外）
+        // 価格帯（名刺以外）※価格フィルター指定時は価格未設定物件も除外
         if (item.sheet !== '名刺' && (pMin > 0 || pMax < Infinity)) {
           const price = parsePrice(item.price);
-          if (price !== null && (price < pMin || price > pMax)) return false;
+          if (price === null || price < pMin || price > pMax) return false;
         }
         return true;
       });
