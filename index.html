@@ -626,8 +626,8 @@
       let okuPos = -1, manPos = -1;
       for (let i = 0; i < raw.length; i++) {
         const c = raw.charCodeAt(i);
-        if (c === 0x5104 && okuPos === -1) okuPos = i; // 億
-        if (c === 0x4E07 && manPos === -1) manPos = i; // 万
+        if (c === 20740 && okuPos === -1) okuPos = i; // 億
+        if (c === 19975 && manPos === -1) manPos = i; // 万
       }
 
       if (okuPos >= 0) {
