@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#2196f3" />
+  <meta name="theme-color" content="#1a237e" />
   <title>不動産マップ</title>
 
   <script>
@@ -17,391 +17,493 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body { font-family: 'Hiragino Sans', 'Meiryo', Arial, sans-serif; }
-    #map { height: 100vh; width: 100%; }
+    :root {
+      --primary:      #1a237e;
+      --primary-mid:  #283593;
+      --primary-light:#e8eaf6;
+      --accent:       #c62828;
+      --success:      #2e7d32;
+      --warning:      #f57f17;
+      --text:         #1c1c2e;
+      --text-sub:     #6b7280;
+      --border:       #e5e7eb;
+      --bg:           #f5f7fa;
+      --white:        #ffffff;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.07);
+      --shadow-lg:    0 10px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+      --radius:       12px;
+      --radius-sm:    7px;
+    }
 
-    /* ─── フィルターバー ─── */
+    body { font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', Arial, sans-serif; color: var(--text); }
+    #map  { height: 100vh; width: 100%; }
+
+    /* ══════════════════════════════
+       ログイン画面
+    ══════════════════════════════ */
+    #loginScreen {
+      position: fixed; inset: 0;
+      background: linear-gradient(145deg, #0d1b5e 0%, #1a237e 40%, #283593 70%, #1565c0 100%);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9999;
+    }
+    /* 背景装飾 */
+    #loginScreen::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(100,181,246,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    #loginCard {
+      position: relative;
+      background: var(--white);
+      border-radius: 20px;
+      padding: 44px 40px 36px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.1);
+      text-align: center;
+      width: 90%; max-width: 380px;
+    }
+    #loginIcon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--primary), #3949ab);
+      border-radius: 18px;
+      margin: 0 auto 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 8px 20px rgba(26,35,126,0.35);
+    }
+    #loginCard h2 {
+      font-size: 22px; font-weight: 700;
+      color: var(--primary); margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+    #loginCard p { font-size: 13px; color: var(--text-sub); margin-bottom: 28px; }
+    #passInput {
+      width: 100%; font-size: 18px;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none; text-align: center;
+      letter-spacing: 0.3em; color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--bg);
+    }
+    #passInput:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,35,126,0.12);
+      background: var(--white);
+    }
+    #loginBtn {
+      margin-top: 14px; width: 100%;
+      font-size: 15px; font-weight: 700;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), #3949ab);
+      color: var(--white); border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer; letter-spacing: 0.05em;
+      box-shadow: 0 4px 14px rgba(26,35,126,0.35);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+    #loginBtn:hover  { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,35,126,0.4); }
+    #loginBtn:active { transform: translateY(0);    opacity: 0.9; }
+    #errorMsg { color: var(--accent); font-size: 13px; margin-top: 12px; min-height: 18px; font-weight: 500; }
+
+    /* ══════════════════════════════
+       フィルターバー
+    ══════════════════════════════ */
     #categoryBar {
       position: absolute;
-      top: 10px; left: 10px; right: 10px;
+      top: 12px; left: 12px; right: 12px;
       z-index: 999;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: var(--shadow-md);
       overflow: hidden;
     }
 
-    /* 1行目：カテゴリ＋ボタン群 */
+    /* トップ行 */
     #topRow {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 8px;
       padding: 10px 12px;
-      border-bottom: 1px solid #f0f0f0;
     }
 
     select#categoryFilter {
-      flex: 1;
-      font-size: 15px;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background-color: #fff;
+      flex: 1; font-size: 14px; font-weight: 600;
+      padding: 9px 34px 9px 12px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--bg);
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'%3E%3Cpath fill='%231a237e' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 8px center;
+      background-position: right 10px center;
       background-size: 20px;
-      cursor: pointer;
+      cursor: pointer; color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    select#categoryFilter:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,35,126,0.1);
     }
 
-    .bar-btn {
+    .top-btn {
       flex-shrink: 0;
-      padding: 8px 12px;
-      font-size: 13px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: white;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      display: flex; align-items: center; gap: 5px;
+      padding: 9px 13px;
+      font-size: 13px; font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      cursor: pointer; white-space: nowrap;
+      color: var(--text-sub);
+      transition: all 0.15s;
     }
-    .bar-btn:hover { background: #f5f5f5; }
-    .bar-btn.active { background: #1976d2; color: white; border-color: #1976d2; }
+    .top-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .top-btn.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
 
     #countBadge {
       flex-shrink: 0;
-      font-size: 12px;
-      color: #555;
+      background: var(--primary);
+      color: var(--white);
+      font-size: 11px; font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
       white-space: nowrap;
-      min-width: 40px;
-      text-align: right;
+      letter-spacing: 0.03em;
+      display: none;
     }
+    #countBadge.visible { display: inline-block; }
 
     /* ローディング */
     #dataLoader {
       display: none;
-      padding: 8px 12px;
-      font-size: 13px;
-      color: #666;
-      border-bottom: 1px solid #f0f0f0;
+      align-items: center; gap: 10px;
+      padding: 10px 14px;
+      font-size: 13px; color: var(--text-sub);
+      border-top: 1px solid var(--border);
+      background: var(--bg);
     }
-    #dataLoader.visible { display: flex; align-items: center; gap: 8px; }
+    #dataLoader.visible { display: flex; }
     .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid #ddd;
-      border-top-color: #1976d2;
+      width: 16px; height: 16px; flex-shrink: 0;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
-      flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* 詳細フィルターパネル */
     #detailPanel {
-      display: none;
-      padding: 10px 12px;
-      border-bottom: 1px solid #f0f0f0;
-      background: #fafafa;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      border-top: 0px solid var(--border);
+      background: var(--bg);
     }
-    #detailPanel.open { display: block; }
+    #detailPanel.open {
+      max-height: 300px;
+      border-top: 1px solid var(--border);
+      padding: 12px 14px 10px;
+    }
 
-    .filter-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
+    .filter-group { margin-bottom: 10px; }
+    .filter-group:last-child { margin-bottom: 0; }
+    .filter-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-sub);
+      margin-bottom: 6px;
     }
-    .filter-row:last-child { margin-bottom: 0; }
-    .filter-label {
-      font-size: 12px;
-      color: #666;
-      min-width: 64px;
-      flex-shrink: 0;
+    .filter-controls {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
     }
     .filter-input {
-      width: 90px;
-      padding: 6px 8px;
-      font-size: 13px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      width: 88px; padding: 7px 10px;
+      font-size: 13px; font-weight: 500;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--white); color: var(--text);
+      transition: border-color 0.15s;
     }
+    .filter-input:focus { outline: none; border-color: var(--primary); }
     .filter-text-input {
-      flex: 1;
-      min-width: 120px;
-      padding: 6px 8px;
+      flex: 1; min-width: 140px;
+      padding: 7px 10px;
       font-size: 13px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--white); color: var(--text);
+      transition: border-color 0.15s;
     }
-    .filter-unit { font-size: 12px; color: #888; }
-    .filter-sep  { font-size: 13px; color: #aaa; }
+    .filter-text-input:focus { outline: none; border-color: var(--primary); }
+    .filter-unit { font-size: 12px; color: var(--text-sub); }
+    .filter-sep  { font-size: 13px; color: #d1d5db; font-weight: 300; }
 
-    #excludeContractedLabel {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 13px;
-      color: #444;
-      cursor: pointer;
+    /* トグルスイッチ */
+    .toggle-wrap {
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; user-select: none;
     }
-    #excludeContractedLabel input { cursor: pointer; width: 15px; height: 15px; }
+    .toggle-switch {
+      position: relative; width: 36px; height: 20px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: #d1d5db; border-radius: 20px;
+      transition: background 0.2s;
+    }
+    .toggle-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 14px; height: 14px;
+      background: white; border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .toggle-switch input:checked ~ .toggle-track { background: var(--primary); }
+    .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(16px); }
+    .toggle-label { font-size: 13px; font-weight: 500; color: var(--text); }
 
     #resetBtn {
-      margin-top: 2px;
-      padding: 6px 14px;
-      font-size: 12px;
-      border: 1px solid #e53935;
-      border-radius: 5px;
-      background: white;
-      color: #e53935;
+      display: flex; align-items: center; gap: 4px;
+      padding: 6px 12px;
+      font-size: 12px; font-weight: 600;
+      border: 1.5px solid #fca5a5;
+      border-radius: var(--radius-sm);
+      background: #fff5f5; color: var(--accent);
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, border-color 0.15s;
     }
-    #resetBtn:hover { background: #ffebee; }
+    #resetBtn:hover { background: #fee2e2; border-color: var(--accent); }
 
     /* 市フィルター */
     #cityFilterContainer {
-      padding: 8px 12px;
-      border-bottom: 1px solid #f0f0f0;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
     }
     #cityFilterContainer.hidden { display: none; }
-    #cityFilterContainer strong { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
-
-    .city-btn {
-      display: inline-block;
-      margin: 3px;
-      padding: 5px 11px;
-      border: 1px solid #ccc;
-      border-radius: 14px;
-      background: #f5f5f5;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    .area-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-sub);
+      margin-bottom: 7px; display: block;
     }
-    .city-btn:hover { background: #e3f2fd; border-color: #90caf9; }
-    .city-btn.active { background: #1976d2; color: white; border-color: #1976d2; }
+    .city-btn {
+      display: inline-flex; align-items: center;
+      margin: 3px; padding: 5px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      background: var(--white);
+      font-size: 12px; font-weight: 500; color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .city-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+    .city-btn.active { background: var(--primary); color: var(--white); border-color: var(--primary); font-weight: 600; }
 
-    /* ─── 情報ウィンドウ ─── */
+    /* ══════════════════════════════
+       情報ウィンドウ
+    ══════════════════════════════ */
     .info-window {
       font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
-      max-width: 300px;
-      padding: 0;
-      background-color: white;
-      border: none;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      width: 280px; max-width: 280px;
+      padding: 0; border: none;
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
     }
-    .info-window-header {
-      padding: 10px 14px;
-      color: white;
-      font-size: 13px;
-      font-weight: bold;
-      letter-spacing: 0.05em;
+    .iw-header {
+      padding: 12px 16px 10px;
+      color: white; position: relative; overflow: hidden;
     }
-    .info-window-body { padding: 12px 14px; }
-    .info-window-title {
-      font-size: 15px;
-      font-weight: bold;
-      color: #222;
-      margin-bottom: 10px;
-      line-height: 1.4;
+    .iw-header::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      pointer-events: none;
     }
-    .info-window-row {
-      display: flex;
-      align-items: baseline;
-      margin-bottom: 6px;
-      font-size: 13px;
+    .iw-category {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; opacity: 0.85; margin-bottom: 3px;
     }
-    .info-window-label {
-      font-size: 11px;
-      color: #888;
-      background: #f0f0f0;
-      border-radius: 3px;
-      padding: 1px 6px;
-      margin-right: 8px;
-      white-space: nowrap;
-      flex-shrink: 0;
+    .iw-name {
+      font-size: 15px; font-weight: 700; line-height: 1.3;
     }
-    .info-window-value { color: #333; word-break: break-all; }
-    .info-window-price {
-      font-size: 18px;
-      font-weight: bold;
-      color: #e53935;
-      margin-bottom: 10px;
+    .iw-body { padding: 12px 16px 14px; background: white; }
+    .iw-price {
+      font-size: 22px; font-weight: 800;
+      color: var(--accent); line-height: 1;
+      margin-bottom: 12px; letter-spacing: -0.5px;
     }
-    .info-window-pdf {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 6px 14px;
-      background: #1976d2;
-      color: white !important;
-      border-radius: 20px;
-      font-size: 12px;
-      text-decoration: none;
-      font-weight: bold;
+    .iw-price span { font-size: 13px; font-weight: 500; color: #9ca3af; margin-left: 2px; }
+    .iw-divider { height: 1px; background: var(--border); margin: 10px 0; }
+    .iw-row {
+      display: flex; align-items: flex-start;
+      gap: 8px; margin-bottom: 7px; font-size: 12px;
     }
-    .info-window-pdf:hover { background: #1565c0; }
+    .iw-row:last-of-type { margin-bottom: 0; }
+    .iw-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+      color: var(--text-sub); background: var(--bg);
+      border-radius: 4px; padding: 2px 6px;
+      white-space: nowrap; flex-shrink: 0; line-height: 1.6;
+    }
+    .iw-val { color: var(--text); word-break: break-all; line-height: 1.5; font-weight: 500; }
+    .iw-status {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .iw-status.contracted { background: #fee2e2; color: var(--accent); }
+    .iw-status.active     { background: #dcfce7; color: var(--success); }
+    .iw-status.other      { background: var(--bg);  color: var(--text-sub); }
+    .iw-pdf {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 12px; padding: 8px 16px;
+      background: linear-gradient(135deg, var(--primary), #3949ab);
+      color: white !important; border-radius: 8px;
+      font-size: 12px; font-weight: 700;
+      text-decoration: none; letter-spacing: 0.03em;
+      box-shadow: 0 3px 10px rgba(26,35,126,0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .iw-pdf:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(26,35,126,0.4); }
 
     @media (max-width: 768px) {
-      .info-window { max-width: 92vw; }
-      .info-window-header { font-size: 3.8vw; }
-      .info-window-title  { font-size: 4.2vw; }
-      .info-window-row    { font-size: 3.8vw; }
-      .info-window-label  { font-size: 3.2vw; }
-      .info-window-price  { font-size: 5.5vw; }
-      .info-window-pdf    { font-size: 3.5vw; padding: 8px 18px; }
+      .info-window { width: 88vw; max-width: 88vw; }
+      .iw-name    { font-size: 4.2vw; }
+      .iw-price   { font-size: 5.8vw; }
+      .iw-row     { font-size: 3.5vw; }
+      .iw-label   { font-size: 3vw; }
+      .iw-pdf     { font-size: 3.5vw; }
     }
 
-    /* ─── 凡例 ─── */
-    #legendToggle {
-      position: fixed;
-      bottom: 24px; right: 12px;
-      z-index: 998;
-      padding: 8px 14px;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      font-size: 13px;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    /* ══════════════════════════════
+       凡例
+    ══════════════════════════════ */
+    #legendWrap {
+      position: fixed; bottom: 20px; right: 12px;
+      z-index: 998; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
     }
     #legendPanel {
-      display: none;
-      position: fixed;
-      bottom: 60px; right: 12px;
-      z-index: 998;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
       padding: 12px 16px;
-      min-width: 150px;
+      min-width: 155px;
+      transform-origin: bottom right;
+      transform: scale(0.95); opacity: 0;
+      pointer-events: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
-    #legendPanel.open { display: block; }
+    #legendPanel.open { transform: scale(1); opacity: 1; pointer-events: auto; }
+    .legend-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-sub);
+      margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
     .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-      font-size: 13px;
+      display: flex; align-items: center; gap: 9px;
+      padding: 4px 0; font-size: 13px; font-weight: 500;
+      color: var(--text);
     }
-    .legend-item:last-child { margin-bottom: 0; }
     .legend-dot {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      flex-shrink: 0;
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-
-    /* ─── ログイン画面 ─── */
-    #loginScreen {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, #1565c0, #42a5f5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
+    #legendToggle {
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 16px;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text); cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.15s, background 0.15s;
     }
-    #loginBox {
-      background: white;
-      border-radius: 16px;
-      padding: 36px 32px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-      text-align: center;
-      width: 90%;
-      max-width: 360px;
-    }
-    #loginBox h2 { font-size: 20px; color: #1976d2; margin-bottom: 8px; }
-    #loginBox p  { font-size: 13px; color: #888; margin-bottom: 20px; }
-    #passInput {
-      width: 100%;
-      font-size: 20px;
-      padding: 12px 14px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      outline: none;
-      text-align: center;
-      letter-spacing: 0.2em;
-      transition: border-color 0.2s;
-    }
-    #passInput:focus { border-color: #1976d2; }
-    #loginBtn {
-      margin-top: 14px;
-      width: 100%;
-      font-size: 16px;
-      padding: 12px;
-      background: #1976d2;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.2s;
-    }
-    #loginBtn:hover { background: #1565c0; }
-    #errorMsg { color: #e53935; font-size: 13px; margin-top: 10px; min-height: 18px; }
+    #legendToggle:hover { box-shadow: var(--shadow-md); }
+    #legendToggle.active { background: var(--primary); color: white; border-color: var(--primary); }
   </style>
 </head>
 <body>
 
-  <!-- ログイン画面 -->
+  <!-- ═══ ログイン画面 ═══ -->
   <div id="loginScreen">
-    <div id="loginBox">
+    <div id="loginCard">
+      <div id="loginIcon">🗺️</div>
       <h2>不動産マップ</h2>
-      <p>パスコードを入力してください</p>
-      <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password">
+      <p>パスコードを入力してログインしてください</p>
+      <input type="password" id="passInput" placeholder="パスコード" autocomplete="current-password">
       <button id="loginBtn" onclick="checkPass()">ログイン</button>
       <div id="errorMsg"></div>
     </div>
   </div>
 
-  <!-- フィルターバー -->
+  <!-- ═══ フィルターバー ═══ -->
   <div id="categoryBar">
 
-    <!-- 1行目 -->
     <div id="topRow">
       <select id="categoryFilter">
         <option value="">カテゴリを選択</option>
       </select>
-      <button class="bar-btn" id="detailToggle">絞り込み ▾</button>
+      <button class="top-btn" id="detailToggle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+        絞り込み
+      </button>
       <span id="countBadge"></span>
     </div>
 
-    <!-- ローディング -->
     <div id="dataLoader">
       <span class="spinner"></span>データを読み込み中...
     </div>
 
-    <!-- 詳細フィルターパネル -->
     <div id="detailPanel">
-      <div class="filter-row">
-        <span class="filter-label">価格帯</span>
-        <input type="number" class="filter-input" id="priceMin" placeholder="下限" min="0">
-        <span class="filter-unit">万円</span>
-        <span class="filter-sep">〜</span>
-        <input type="number" class="filter-input" id="priceMax" placeholder="上限" min="0">
-        <span class="filter-unit">万円</span>
+      <div class="filter-group">
+        <div class="filter-group-label">価格帯（万円）</div>
+        <div class="filter-controls">
+          <input type="number" class="filter-input" id="priceMin" placeholder="下限" min="0">
+          <span class="filter-sep">—</span>
+          <input type="number" class="filter-input" id="priceMax" placeholder="上限" min="0">
+          <span class="filter-unit">万円</span>
+        </div>
       </div>
-      <div class="filter-row">
-        <span class="filter-label">キーワード</span>
-        <input type="text" class="filter-text-input" id="keywordInput" placeholder="物件名・備考・紹介元">
+      <div class="filter-group">
+        <div class="filter-group-label">キーワード</div>
+        <div class="filter-controls">
+          <input type="text" class="filter-text-input" id="keywordInput" placeholder="物件名・備考・紹介元で検索">
+        </div>
       </div>
-      <div class="filter-row">
-        <span class="filter-label">状況</span>
-        <label id="excludeContractedLabel">
-          <input type="checkbox" id="excludeContracted"> 成約済みを除外
-        </label>
-      </div>
-      <div class="filter-row" style="justify-content: flex-end;">
-        <button id="resetBtn">フィルターをリセット</button>
+      <div class="filter-group">
+        <div class="filter-controls" style="justify-content: space-between;">
+          <label class="toggle-wrap">
+            <div class="toggle-switch">
+              <input type="checkbox" id="excludeContracted">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </div>
+            <span class="toggle-label">成約済みを除外</span>
+          </label>
+          <button id="resetBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.45"/></svg>
+            リセット
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 市フィルター -->
     <div id="cityFilterContainer" class="hidden">
-      <strong>エリアを選択：</strong>
+      <span class="area-label">エリアを選択</span>
     </div>
 
   </div>
@@ -409,16 +511,22 @@
   <!-- 地図 -->
   <div id="map"></div>
 
-  <!-- 凡例 -->
-  <button id="legendToggle">凡例 ▾</button>
-  <div id="legendPanel">
-    <div class="legend-item"><div class="legend-dot" style="background:#43a047"></div>土地</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#1e88e5"></div>戸建て</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#8e24aa"></div>マンション</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div>外人住宅</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#fb8c00"></div>民泊運営物件</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#00897b"></div>名刺</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#e53935"></div>その他</div>
+  <!-- ═══ 凡例 ═══ -->
+  <div id="legendWrap">
+    <div id="legendPanel">
+      <div class="legend-title">カテゴリ凡例</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#43a047"></div>土地</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1e88e5"></div>戸建て</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8e24aa"></div>マンション</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f9a825"></div>外人住宅</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fb8c00"></div>民泊運営物件</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00897b"></div>名刺</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e53935"></div>その他</div>
+    </div>
+    <button id="legendToggle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      凡例
+    </button>
   </div>
 
   <script>
@@ -456,7 +564,6 @@
     document.getElementById('passInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') checkPass();
     });
-
     function checkPass() { /* password removed from history */ } else {
         document.getElementById('errorMsg').textContent = "パスコードが違います";
         document.getElementById('passInput').select();
@@ -468,11 +575,10 @@
       const panel = document.getElementById('detailPanel');
       const btn   = document.getElementById('detailToggle');
       const open  = panel.classList.toggle('open');
-      btn.textContent = open ? '絞り込み ▴' : '絞り込み ▾';
       btn.classList.toggle('active', open);
     });
 
-    // ─── 詳細フィルター変更時 ───
+    // ─── 詳細フィルター変更 ───
     ['priceMin', 'priceMax', 'keywordInput'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderMarkers);
     });
@@ -480,16 +586,14 @@
 
     // ─── リセット ───
     document.getElementById('resetBtn').addEventListener('click', () => {
-      document.getElementById('priceMin').value       = '';
-      document.getElementById('priceMax').value       = '';
-      document.getElementById('keywordInput').value   = '';
-      document.getElementById('excludeContracted').checked = false;
-      document.getElementById('categoryFilter').value = '';
-      currentCategory = '';
-      currentCity     = '';
+      document.getElementById('priceMin').value             = '';
+      document.getElementById('priceMax').value             = '';
+      document.getElementById('keywordInput').value         = '';
+      document.getElementById('excludeContracted').checked  = false;
+      document.getElementById('categoryFilter').value       = '';
+      currentCategory = ''; currentCity = '';
       document.getElementById('cityFilterContainer').classList.add('hidden');
       document.getElementById('detailPanel').classList.remove('open');
-      document.getElementById('detailToggle').textContent = '絞り込み ▾';
       document.getElementById('detailToggle').classList.remove('active');
       renderMarkers();
     });
@@ -498,47 +602,48 @@
     document.getElementById('legendToggle').addEventListener('click', () => {
       const panel = document.getElementById('legendPanel');
       const open  = panel.classList.toggle('open');
-      document.getElementById('legendToggle').textContent = open ? '凡例 ▴' : '凡例 ▾';
+      document.getElementById('legendToggle').classList.toggle('active', open);
     });
 
-    // 地図クリックで凡例・市フィルターを閉じる
     function closeOverlays() {
       document.getElementById('cityFilterContainer').classList.add('hidden');
     }
 
     // ─── 価格パーサー（万円単位で返す）───
-    // 対応フォーマット例: "3000", "3,000", "3000万", "3000万円", "1億", "1億5000万"
     function parsePrice(str) {
       if (!str && str !== 0) return null;
       const s = String(str).replace(/[,，\s]/g, '');
-      let total = 0;
-      let matched = false;
-
-      // 億を含む場合
+      let total = 0, matched = false;
       const okuMatch = s.match(/(\d+(?:\.\d+)?)億/);
-      if (okuMatch) {
-        total += parseFloat(okuMatch[1]) * 10000;
-        matched = true;
-      }
-
-      // 万（円）を含む場合、または億の後に続く数字
+      if (okuMatch) { total += parseFloat(okuMatch[1]) * 10000; matched = true; }
       const manMatch = s.match(/(\d+(?:\.\d+)?)[万円]/);
-      if (manMatch) {
-        total += parseFloat(manMatch[1]);
-        matched = true;
-      } else if (!okuMatch) {
-        // 単なる数値（万円単位と想定）
+      if (manMatch) { total += parseFloat(manMatch[1]); matched = true; }
+      else if (!okuMatch) {
         const n = parseFloat(s);
         if (!isNaN(n)) { total = n; matched = true; }
       }
-
       return matched ? total : null;
     }
 
-    // ─── 件数更新 ───
+    // ─── 件数バッジ ───
     function updateCount(n) {
       const badge = document.getElementById('countBadge');
-      badge.textContent = currentCategory ? `${n}件` : '';
+      if (currentCategory) {
+        badge.textContent = `${n}件`;
+        badge.classList.add('visible');
+      } else {
+        badge.classList.remove('visible');
+      }
+    }
+
+    // ─── 状況バッジHTML ───
+    function statusBadge(status) {
+      if (!status) return '';
+      const s = status.trim();
+      let cls = 'other';
+      if (s === '成約済み') cls = 'contracted';
+      else if (s === '売出中' || s === '交渉中') cls = 'active';
+      return `<span class="iw-status ${cls}">● ${s}</span>`;
     }
 
     // ─── 地図初期化 ───
@@ -546,13 +651,20 @@
       map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 26.2124, lng: 127.6809 },
         zoom: isMobile ? 14 : 9,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
+        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_CENTER },
+        styles: [
+          { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+          { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] }
+        ]
       });
       map.addListener('dragstart', closeOverlays);
       map.addListener('click',     closeOverlays);
 
       const loader = document.getElementById('dataLoader');
       loader.classList.add('visible');
-
       try {
         const res = await fetch('https://script.google.com/macros/s/AKfycbwuYJQ7Oxjh0cyDDjmoEjFBhSbmUSZ1cO7uw0ONdnWojfQD36L8IVrMAa8O07haB2_Yqw/exec');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -564,7 +676,6 @@
       }
       loader.classList.remove('visible');
 
-      // カテゴリ選択肢を生成
       const categoryFilter = document.getElementById('categoryFilter');
       const categories = [...new Set(fullData.map(d => d.sheet))].filter(Boolean);
       categoryFilter.innerHTML = '<option value="">カテゴリを選択</option>' +
@@ -573,11 +684,9 @@
       categoryFilter.addEventListener('change', e => {
         currentCategory = e.target.value;
         currentCity     = '';
-
         if (!currentCategory) {
           document.getElementById('cityFilterContainer').classList.add('hidden');
-          renderMarkers();
-          return;
+          renderMarkers(); return;
         }
         buildCityButtons(currentCategory);
         renderMarkers(true);
@@ -594,7 +703,7 @@
         return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
       });
 
-      container.innerHTML = '<strong>エリアを選択：</strong>';
+      container.innerHTML = '<span class="area-label">エリアを選択</span>';
 
       const allBtn = document.createElement('button');
       allBtn.textContent = 'すべて';
@@ -611,7 +720,6 @@
       });
 
       container.classList.remove('hidden');
-
       container.addEventListener('click', e => {
         const btn = e.target.closest('.city-btn');
         if (!btn) return;
@@ -626,11 +734,7 @@
     function renderMarkers(autoFit = false) {
       allMarkers.forEach(m => m.setMap(null));
       allMarkers = [];
-
-      if (!currentCategory) {
-        updateCount(0);
-        return;
-      }
+      if (!currentCategory) { updateCount(0); return; }
 
       const pMinVal = document.getElementById('priceMin').value;
       const pMaxVal = document.getElementById('priceMax').value;
@@ -643,12 +747,10 @@
         if (item.sheet !== currentCategory) return false;
         if (currentCity && item.city !== currentCity) return false;
         if (exContracted && item.status && item.status.trim() === '成約済み') return false;
-        // キーワード
         if (kw) {
           const hay = [item.name, item.note, item.source, item.city].join(' ').toLowerCase();
           if (!hay.includes(kw)) return false;
         }
-        // 価格帯（名刺以外）※価格フィルター指定時は価格未設定物件も除外
         if (item.sheet !== '名刺' && (pMin > 0 || pMax < Infinity)) {
           const price = parsePrice(item.price);
           if (price === null || price < pMin || price > pMax) return false;
@@ -662,52 +764,45 @@
       let validBounds = false;
 
       filtered.forEach(item => {
-        const lat = parseFloat(item.lat);
-        const lng = parseFloat(item.lng);
+        const lat = parseFloat(item.lat), lng = parseFloat(item.lng);
         if (isNaN(lat) || isNaN(lng)) return;
 
         const marker = new google.maps.Marker({
-          position: { lat, lng },
-          map,
-          icon: {
-            url: iconMap[item.sheet] || iconMap["その他"],
-            scaledSize: new google.maps.Size(32, 32)
-          },
+          position: { lat, lng }, map,
+          icon: { url: iconMap[item.sheet] || iconMap["その他"], scaledSize: new google.maps.Size(32, 32) },
           title: item.name || '',
         });
-
         bounds.extend(marker.getPosition());
         validBounds = true;
 
         const headerColor = headerColorMap[item.sheet] || headerColorMap["その他"];
+
         const content = item.sheet === '名刺' ? `
           <div class="info-window">
-            <div class="info-window-header" style="background:${headerColor};">🪪 名刺</div>
-            <div class="info-window-body">
-              <div class="info-window-title">${item.name || '---'}</div>
-              <div class="info-window-row">
-                <span class="info-window-label">担当者</span>
-                <span class="info-window-value">${item.repName || '---'}</span>
-              </div>
-              <div class="info-window-row">
-                <span class="info-window-label">TEL</span>
-                <span class="info-window-value"><a href="tel:${item.repTel}" style="color:#1976d2;">${item.repTel || '---'}</a></span>
-              </div>
-              ${item.note ? `<div class="info-window-row"><span class="info-window-label">備考</span><span class="info-window-value">${item.note}</span></div>` : ''}
-              ${item.pdf ? `<div><a class="info-window-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
+            <div class="iw-header" style="background:linear-gradient(135deg,${headerColor},${headerColor}cc);">
+              <div class="iw-category">名刺</div>
+              <div class="iw-name">${item.name || '---'}</div>
+            </div>
+            <div class="iw-body">
+              ${item.repName ? `<div class="iw-row"><span class="iw-label">担当者</span><span class="iw-val">${item.repName}</span></div>` : ''}
+              ${item.repTel  ? `<div class="iw-row"><span class="iw-label">TEL</span><span class="iw-val"><a href="tel:${item.repTel}" style="color:#1a237e;font-weight:600;">${item.repTel}</a></span></div>` : ''}
+              ${item.note    ? `<div class="iw-row"><span class="iw-label">備考</span><span class="iw-val">${item.note}</span></div>` : ''}
+              ${item.pdf     ? `<div><a class="iw-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
             </div>
           </div>
         ` : `
           <div class="info-window">
-            <div class="info-window-header" style="background:${headerColor};">🏠 ${item.sheet}</div>
-            <div class="info-window-body">
-              <div class="info-window-title">${item.name || '---'}</div>
-              ${item.price  ? `<div class="info-window-price">¥ ${item.price} 万円</div>` : ''}
-              ${item.unit   ? `<div class="info-window-row"><span class="info-window-label">坪単価</span><span class="info-window-value">${item.unit} 万円</span></div>` : ''}
-              ${item.source ? `<div class="info-window-row"><span class="info-window-label">紹介元</span><span class="info-window-value">${item.source}</span></div>` : ''}
-              ${item.status ? `<div class="info-window-row"><span class="info-window-label">状況</span><span class="info-window-value">${item.status}</span></div>` : ''}
-              ${item.note   ? `<div class="info-window-row"><span class="info-window-label">備考</span><span class="info-window-value">${item.note}</span></div>` : ''}
-              ${item.pdf    ? `<div><a class="info-window-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
+            <div class="iw-header" style="background:linear-gradient(135deg,${headerColor},${headerColor}cc);">
+              <div class="iw-category">${item.sheet}</div>
+              <div class="iw-name">${item.name || '---'}</div>
+            </div>
+            <div class="iw-body">
+              ${item.price ? `<div class="iw-price">${item.price}<span>万円</span></div><div class="iw-divider"></div>` : ''}
+              ${item.unit   ? `<div class="iw-row"><span class="iw-label">坪単価</span><span class="iw-val">${item.unit} 万円</span></div>` : ''}
+              ${item.source ? `<div class="iw-row"><span class="iw-label">紹介元</span><span class="iw-val">${item.source}</span></div>` : ''}
+              ${item.status ? `<div class="iw-row"><span class="iw-label">状況</span><span class="iw-val">${statusBadge(item.status)}</span></div>` : ''}
+              ${item.note   ? `<div class="iw-row"><span class="iw-label">備考</span><span class="iw-val">${item.note}</span></div>` : ''}
+              ${item.pdf    ? `<div><a class="iw-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
             </div>
           </div>
         `;
@@ -718,15 +813,12 @@
           infowindow.open({ anchor: marker, map });
           currentInfoWindow = infowindow;
         });
-
         allMarkers.push(marker);
       });
 
-      // カテゴリ・市変更時のみ自動ズーム
       if (autoFit && validBounds) {
         if (allMarkers.length === 1) {
-          map.setCenter(allMarkers[0].getPosition());
-          map.setZoom(15);
+          map.setCenter(allMarkers[0].getPosition()); map.setZoom(15);
         } else {
           map.fitBounds(bounds, { top: 80, bottom: 20, left: 20, right: 20 });
         }
