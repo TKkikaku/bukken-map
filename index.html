@@ -617,27 +617,28 @@
     }
 
     // ─── 価格パーサー（万円単位で返す）───
-    // charCodeAt ループで直接検索（文字列操作・正規表現・indexOf に依存しない）
     function parsePrice(str) {
       if (!str && str !== 0) return null;
       const raw = String(str);
 
-      // 億(0x5104) と 万(0x4E07) の位置を charCodeAt で確実に探す
+      // 億(U+5104=20740) または 憶(U+6106=24838 ※誤字対応) と 万(U+4E07=19975) の位置を探す
       let okuPos = -1, manPos = -1;
       for (let i = 0; i < raw.length; i++) {
         const c = raw.charCodeAt(i);
-        if (c === 20740 && okuPos === -1) okuPos = i; // 億
+        if ((c === 20740 || c === 24838) && okuPos === -1) okuPos = i; // 億 or 憶
         if (c === 19975 && manPos === -1) manPos = i; // 万
       }
 
       if (okuPos >= 0) {
-        // 億の前の数字部分を取得
         const okuNum = parseFloat(raw.slice(0, okuPos).replace(/[^0-9.]/g, ''));
         if (isNaN(okuNum)) return null;
         let total = okuNum * 10000;
-        // 億の後ろに万が続く場合（例：1億5000万）
-        if (manPos > okuPos) {
-          const manNum = parseFloat(raw.slice(okuPos + 1, manPos).replace(/[^0-9.]/g, ''));
+        // 億の後ろの数字部分（万単位）を加算 例: "1億6,214" → 6214万、"1億5000万" → 5000万
+        const afterOku = raw.slice(okuPos + 1);
+        const manIdx = manPos > okuPos ? manPos - (okuPos + 1) : afterOku.length;
+        const manStr = afterOku.slice(0, manIdx).replace(/[^0-9]/g, '');
+        if (manStr.length > 0) {
+          const manNum = parseFloat(manStr);
           if (!isNaN(manNum)) total += manNum;
         }
         return total;
