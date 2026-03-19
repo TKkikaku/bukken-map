@@ -832,8 +832,9 @@
               ${item.unit   ? `<div class="iw-row"><span class="iw-label">坪単価</span><span class="iw-val">${item.unit} 万円</span></div>` : ''}
               ${item.source ? `<div class="iw-row"><span class="iw-label">紹介元</span><span class="iw-val">${item.source}</span></div>` : ''}
               ${item.status ? `<div class="iw-row"><span class="iw-label">状況</span><span class="iw-val">${statusBadge(item.status)}</span></div>` : ''}
-              ${item.note   ? `<div class="iw-row"><span class="iw-label">備考</span><span class="iw-val">${item.note}</span></div>` : ''}
-              ${item.pdf    ? `<div><a class="iw-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
+              ${item.note    ? `<div class="iw-row"><span class="iw-label">備考</span><span class="iw-val">${item.note}</span></div>` : ''}
+              ${item.regDate ? `<div class="iw-row"><span class="iw-label">登録日</span><span class="iw-val">${item.regDate}</span></div>` : ''}
+              ${item.pdf     ? `<div><a class="iw-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
             </div>
           </div>
         `;
