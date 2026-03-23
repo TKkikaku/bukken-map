@@ -627,6 +627,19 @@
       document.getElementById('legendToggle').classList.toggle('active', open);
     });
 
+    // ─── GoogleドライブURLから直接表示URLに変換 ───
+    function driveImgUrl(url) {
+      if (!url) return null;
+      let id = null;
+      const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m1) { id = m1[1]; }
+      else {
+        const m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (m2) id = m2[1];
+      }
+      return id ? `https://drive.google.com/uc?export=view&id=${id}` : null;
+    }
+
     // ─── 価格パーサー（万円単位で返す）───
     function parsePrice(str) {
       if (!str && str !== 0) return null;
@@ -869,6 +882,7 @@ if (price === null || price < pMin || price > pMax) return false;
 
         const headerColor = headerColorMap[item.sheet] || headerColorMap["その他"];
 
+        const imgUrl = driveImgUrl(item.pdf);
         const content = item.sheet === '名刺' ? `
           <div class="info-window">
             <div class="iw-header" style="background:linear-gradient(135deg,${headerColor},${headerColor}cc);">
@@ -879,6 +893,7 @@ if (price === null || price < pMin || price > pMax) return false;
               ${item.repName ? `<div class="iw-row"><span class="iw-label">担当者</span><span class="iw-val">${item.repName}</span></div>` : ''}
               ${item.repTel  ? `<div class="iw-row"><span class="iw-label">TEL</span><span class="iw-val"><a href="tel:${item.repTel}" style="color:#d97706;font-weight:600;">${item.repTel}</a></span></div>` : ''}
               ${item.note    ? `<div class="iw-row"><span class="iw-label">備考</span><span class="iw-val">${item.note}</span></div>` : ''}
+              ${imgUrl       ? `<div><img src="${imgUrl}" alt="名刺" style="width:100%;border-radius:8px;margin-top:10px;display:block;"></div>` : ''}
               ${item.pdf     ? `<div><a class="iw-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
             </div>
           </div>
