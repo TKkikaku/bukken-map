@@ -571,7 +571,16 @@
     document.getElementById('passInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') checkPass();
     });
-    function checkPass() { /* password removed from history */ } else {
+    async function checkPass() {
+      const input = document.getElementById('passInput').value;
+      const encoded = new TextEncoder().encode(input);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+      const hashHex = Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      if (hashHex === 'f2060d5f3f02090a8af91045a1e3aedcd4f4149b9cc2d0a58ff21c85457126f2') {
+        document.getElementById('loginScreen').style.display = 'none';
+        initMap();
+      } else {
         document.getElementById('errorMsg').textContent = "パスコードが違います";
         document.getElementById('passInput').select();
       }
