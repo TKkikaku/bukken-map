@@ -792,8 +792,7 @@
         }
         if (item.sheet !== '名刺' && (pMin > 0 || pMax < Infinity)) {
           const price = parsePrice(item.price);
-          console.log(`[価格フィルター] ${item.name}: 生データ="${item.price}" → 解析値=${price}万円, 条件: ${pMin}〜${pMax}万円`);
-          if (price === null || price < pMin || price > pMax) return false;
+if (price === null || price < pMin || price > pMax) return false;
         }
         return true;
       });
