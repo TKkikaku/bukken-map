@@ -507,10 +507,9 @@
           </button>
         </div>
       </div>
-    </div>
-
-    <div id="cityFilterContainer" class="hidden">
-      <span class="area-label">エリアを選択</span>
+      <div id="cityFilterContainer" class="hidden">
+        <span class="area-label">エリアを選択</span>
+      </div>
     </div>
 
   </div>
@@ -621,10 +620,6 @@
       document.getElementById('legendToggle').classList.toggle('active', open);
     });
 
-    function closeOverlays() {
-      document.getElementById('cityFilterContainer').classList.add('hidden');
-    }
-
     // ─── 価格パーサー（万円単位で返す）───
     function parsePrice(str) {
       if (!str && str !== 0) return null;
@@ -698,9 +693,6 @@
           { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] }
         ]
       });
-      map.addListener('dragstart', closeOverlays);
-      map.addListener('click',     closeOverlays);
-
       const loader = document.getElementById('dataLoader');
       loader.classList.add('visible');
       try {
