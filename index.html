@@ -287,11 +287,13 @@
     /* 市フィルター */
     #cityFilterContainer {
       padding: 10px 14px;
+      margin: 0 -14px;
       border-top: 1px solid var(--border);
     }
     #cityFilterContainer.hidden { display: none; }
     #sourceFilterContainer {
       padding: 10px 14px;
+      margin: 0 -14px;
       border-top: 1px solid var(--border);
     }
     #sourceFilterContainer.hidden { display: none; }
@@ -763,14 +765,14 @@
       });
 
       container.classList.remove('hidden');
-      container.addEventListener('click', e => {
+      container.onclick = e => {
         const btn = e.target.closest('.city-btn');
         if (!btn) return;
         container.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentCity = btn.dataset.city;
         renderMarkers(true);
-      });
+      };
     }
 
     // ─── 紹介元ボタン生成 ───
@@ -799,14 +801,14 @@
       });
 
       container.classList.remove('hidden');
-      container.addEventListener('click', e => {
+      container.onclick = e => {
         const btn = e.target.closest('.city-btn');
         if (!btn) return;
         container.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentSource = btn.dataset.source;
         renderMarkers(true);
-      });
+      };
     }
 
     // ─── マーカー描画 ───
