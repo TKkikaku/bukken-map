@@ -290,6 +290,11 @@
       border-top: 1px solid var(--border);
     }
     #cityFilterContainer.hidden { display: none; }
+    #sourceFilterContainer {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+    }
+    #sourceFilterContainer.hidden { display: none; }
     .area-label {
       font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--text-sub);
@@ -510,6 +515,9 @@
       <div id="cityFilterContainer" class="hidden">
         <span class="area-label">エリアを選択</span>
       </div>
+      <div id="sourceFilterContainer" class="hidden">
+        <span class="area-label">紹介元を選択</span>
+      </div>
     </div>
 
   </div>
@@ -540,6 +548,7 @@
     let map, fullData = [], allMarkers = [], currentInfoWindow = null;
     let currentCategory = '';
     let currentCity     = '';
+    let currentSource   = '';
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
     const iconMap = {
@@ -606,8 +615,9 @@
       document.getElementById('keywordInput').value         = '';
       document.getElementById('excludeContracted').checked  = false;
       document.getElementById('categoryFilter').value       = '';
-      currentCategory = ''; currentCity = '';
+      currentCategory = ''; currentCity = ''; currentSource = '';
       document.getElementById('cityFilterContainer').classList.add('hidden');
+      document.getElementById('sourceFilterContainer').classList.add('hidden');
       document.getElementById('detailPanel').classList.remove('open');
       document.getElementById('detailToggle').classList.remove('active');
       renderMarkers();
@@ -714,11 +724,14 @@
       categoryFilter.addEventListener('change', e => {
         currentCategory = e.target.value;
         currentCity     = '';
+        currentSource   = '';
         if (!currentCategory) {
           document.getElementById('cityFilterContainer').classList.add('hidden');
+          document.getElementById('sourceFilterContainer').classList.add('hidden');
           renderMarkers(); return;
         }
         buildCityButtons(currentCategory);
+        buildSourceButtons(currentCategory);
         renderMarkers(true);
       });
     }
@@ -760,6 +773,42 @@
       });
     }
 
+    // ─── 紹介元ボタン生成 ───
+    function buildSourceButtons(category) {
+      const container = document.getElementById('sourceFilterContainer');
+      const sources = [...new Set(
+        fullData.filter(d => d.sheet === category && d.source).map(d => d.source)
+      )].sort();
+
+      if (sources.length === 0) { container.classList.add('hidden'); return; }
+
+      container.innerHTML = '<span class="area-label">紹介元を選択</span>';
+
+      const allBtn = document.createElement('button');
+      allBtn.textContent = 'すべて';
+      allBtn.className = 'city-btn active';
+      allBtn.dataset.source = '';
+      container.appendChild(allBtn);
+
+      sources.forEach(src => {
+        const btn = document.createElement('button');
+        btn.textContent = src;
+        btn.className = 'city-btn';
+        btn.dataset.source = src;
+        container.appendChild(btn);
+      });
+
+      container.classList.remove('hidden');
+      container.addEventListener('click', e => {
+        const btn = e.target.closest('.city-btn');
+        if (!btn) return;
+        container.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentSource = btn.dataset.source;
+        renderMarkers(true);
+      });
+    }
+
     // ─── マーカー描画 ───
     function renderMarkers(autoFit = false) {
       if (currentInfoWindow) { currentInfoWindow.close(); currentInfoWindow = null; }
@@ -777,6 +826,7 @@
       const filtered = fullData.filter(item => {
         if (item.sheet !== currentCategory) return false;
         if (currentCity && item.city !== currentCity) return false;
+        if (currentSource && item.source !== currentSource) return false;
         if (exContracted && item.status && item.status.trim() === '成約済み') return false;
         if (kw) {
           const hay = [item.name, item.note, item.source, item.city].join(' ').toLowerCase();
