@@ -305,6 +305,7 @@
     }
     .city-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
     .city-btn.active { background: var(--primary); color: var(--primary-text); border-color: var(--primary); font-weight: 600; }
+    .city-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
 
     /* ══════════════════════════════
        情報ウィンドウ
@@ -537,7 +538,7 @@
     // ─── 状態 ───
     let map, fullData = [], allMarkers = [], currentInfoWindow = null;
     let currentCategory = '';
-    let currentCity     = '';
+    let currentCities   = new Set();
     let currentSource   = '';
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
@@ -611,7 +612,7 @@
       document.getElementById('keywordInput').value         = '';
       document.querySelectorAll('#contractedFilter .segment-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
       document.getElementById('categoryFilter').value       = '';
-      currentCategory = ''; currentCity = ''; currentSource = '';
+      currentCategory = ''; currentCities = new Set(); currentSource = '';
       document.getElementById('cityFilterContainer').classList.add('hidden');
       document.getElementById('sourceFilterContainer').classList.add('hidden');
       document.getElementById('detailPanel').classList.remove('open');
@@ -719,7 +720,7 @@
 
       categoryFilter.addEventListener('change', e => {
         currentCategory = e.target.value;
-        currentCity     = '';
+        currentCities   = new Set();
         currentSource   = '';
         if (!currentCategory) {
           document.getElementById('cityFilterContainer').classList.add('hidden');
@@ -761,10 +762,23 @@
       container.classList.remove('hidden');
       container.onclick = e => {
         const btn = e.target.closest('.city-btn');
-        if (!btn) return;
-        container.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentCity = btn.dataset.city;
+        if (!btn || btn.disabled) return;
+        const allBtn = container.querySelector('.city-btn[data-city=""]');
+        if (btn.dataset.city === '') {
+          // 「すべて」→ 他を全解除
+          container.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentCities = new Set();
+        } else {
+          allBtn.classList.remove('active');
+          btn.classList.toggle('active');
+          if (btn.classList.contains('active')) {
+            currentCities.add(btn.dataset.city);
+          } else {
+            currentCities.delete(btn.dataset.city);
+          }
+          if (currentCities.size === 0) allBtn.classList.add('active');
+        }
         renderMarkers(true);
       };
     }
@@ -821,7 +835,7 @@
 
       const filtered = fullData.filter(item => {
         if (item.sheet !== currentCategory) return false;
-        if (currentCity && item.city !== currentCity) return false;
+        if (currentCities.size > 0 && !currentCities.has(item.city || '未設定')) return false;
         if (currentSource && item.source !== currentSource) return false;
         if (contractedVal === 'exclude' && item.status && item.status.trim() === '成約済み') return false;
         if (contractedVal === 'only' && (!item.status || item.status.trim() !== '成約済み')) return false;
@@ -906,6 +920,40 @@ if (price === null || price < pMin || price > pMax) return false;
           map.fitBounds(bounds, { top: 80, bottom: 20, left: 20, right: 20 });
         }
       }
+      updateCityButtonStates();
+    }
+
+    // ─── エリアボタンのグレーアウト更新 ───
+    function updateCityButtonStates() {
+      const container = document.getElementById('cityFilterContainer');
+      if (container.classList.contains('hidden') || !currentCategory) return;
+
+      const pMin = document.getElementById('priceMin').value !== '' ? parseFloat(document.getElementById('priceMin').value) : 0;
+      const pMax = document.getElementById('priceMax').value !== '' ? parseFloat(document.getElementById('priceMax').value) : Infinity;
+      const kw   = (document.getElementById('keywordInput').value || '').trim().toLowerCase();
+      const contractedVal = document.querySelector('#contractedFilter .segment-btn.active')?.dataset.val ?? 'all';
+
+      container.querySelectorAll('.city-btn[data-city]').forEach(btn => {
+        if (btn.dataset.city === '') return;
+        const city = btn.dataset.city;
+        const hasItems = fullData.some(item => {
+          if (item.sheet !== currentCategory) return false;
+          if ((item.city || '未設定') !== city) return false;
+          if (currentSource && item.source !== currentSource) return false;
+          if (contractedVal === 'exclude' && item.status && item.status.trim() === '成約済み') return false;
+          if (contractedVal === 'only' && (!item.status || item.status.trim() !== '成約済み')) return false;
+          if (kw) {
+            const hay = [item.name, item.note, item.source, item.city].join(' ').toLowerCase();
+            if (!hay.includes(kw)) return false;
+          }
+          if (item.sheet !== '名刺' && (pMin > 0 || pMax < Infinity)) {
+            const price = parsePrice(item.price);
+            if (price === null || price < pMin || price > pMax) return false;
+          }
+          return true;
+        });
+        btn.disabled = !hasItems;
+      });
     }
   </script>
 
