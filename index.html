@@ -719,6 +719,14 @@
         const res = await fetch('https://script.google.com/macros/s/AKfycbwuYJQ7Oxjh0cyDDjmoEjFBhSbmUSZ1cO7uw0ONdnWojfQD36L8IVrMAa8O07haB2_Yqw/exec');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         fullData = await res.json();
+        // GAS側の二重ループバグ対策：同一エントリの重複を除去
+        const _seen = new Set();
+        fullData = fullData.filter(d => {
+          const key = `${d.sheet}|${d.lat}|${d.lng}|${d.name}`;
+          if (_seen.has(key)) return false;
+          _seen.add(key);
+          return true;
+        });
       } catch (err) {
         loader.innerHTML = '⚠️ データの取得に失敗しました。再読み込みしてください。';
         console.error("データ取得エラー:", err);
@@ -863,8 +871,6 @@ if (price === null || price < pMin || price > pMax) return false;
         return true;
       });
 
-      updateCount(filtered.length);
-
       const bounds = new google.maps.LatLngBounds();
       let validBounds = false;
 
@@ -893,7 +899,7 @@ if (price === null || price < pMin || price > pMax) return false;
               ${item.repName ? `<div class="iw-row"><span class="iw-label">担当者</span><span class="iw-val">${item.repName}</span></div>` : ''}
               ${item.repTel  ? `<div class="iw-row"><span class="iw-label">TEL</span><span class="iw-val"><a href="tel:${item.repTel}" style="color:#d97706;font-weight:600;">${item.repTel}</a></span></div>` : ''}
               ${item.note    ? `<div class="iw-row"><span class="iw-label">備考</span><span class="iw-val">${item.note}</span></div>` : ''}
-              ${imgUrl       ? `<div><img src="${imgUrl}" alt="名刺" style="width:100%;border-radius:8px;margin-top:10px;display:block;"></div>` : ''}
+              ${imgUrl       ? `<div><img src="${imgUrl}" alt="名刺" style="width:100%;border-radius:8px;margin-top:10px;display:block;" onerror="this.style.display='none'"></div>` : ''}
               ${item.pdf     ? `<div><a class="iw-pdf" href="${item.pdf}" target="_blank">📄 PDFを見る</a></div>` : ''}
             </div>
           </div>
@@ -935,6 +941,7 @@ if (price === null || price < pMin || price > pMax) return false;
           map.fitBounds(bounds, { top: 80, bottom: 20, left: 20, right: 20 });
         }
       }
+      updateCount(allMarkers.length);
       updateCityButtonStates();
     }
 

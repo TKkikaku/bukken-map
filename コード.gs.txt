@@ -1,0 +1,62 @@
+function doGet(e) {
+  const ss = SpreadsheetApp.openById('1HBt9l7Z4Q4PekvNUrPd8tUopRy0JFO27epT-tgsxqU0');
+  const sheets = ss.getSheets();
+  const allData = [];
+
+  sheets.forEach(sheet => {
+    const sheetName = sheet.getName();
+    const values = sheet.getDataRange().getValues();
+    if (values.length < 2) return;
+
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+
+      // ▼ 名刺シート用（H列: 緯度 = row[7], I列: 経度 = row[8]）
+      if (sheetName === "名刺") {
+        if (!row[7] || !row[8]) continue; // 緯度経度がない場合スキップ
+        allData.push({
+          sheet:   "名刺",
+          name:    row[0] || '',  // 会社名
+          pdf:     row[1] || '',  // PDFリンク
+          repName: row[3] || '',  // 担当名
+          repTel:  row[5] || '',  // 担当TEL
+          note:    row[6] || '',  // 備考
+          lat:     row[7],        // 緯度
+          lng:     row[8],        // 経度
+        });
+      }
+
+      // ▼ 通常シート用（B列: 緯度 = row[1], C列: 経度 = row[2]）
+      else {
+        const lat = parseFloat(row[1]);
+        const lng = parseFloat(row[2]);
+        if (isNaN(lat) || isNaN(lng)) continue;
+
+        const regDateRaw = row[11];
+        const regDate = regDateRaw instanceof Date
+          ? Utilities.formatDate(regDateRaw, 'Asia/Tokyo', 'yyyy/MM/dd')
+          : (regDateRaw ? String(regDateRaw) : '');
+
+        allData.push({
+          sheet:   sheetName,
+          name:    row[0]  || '',
+          lat,
+          lng,
+          pdf:     row[3]  || '',
+          price:   row[4]  || '',
+          unit:    row[5]  || '',
+          source:  row[6]  || '',
+          city:    row[7]  || '',
+          town:    row[8]  || '',
+          note:    row[9]  || '',
+          status:  row[10] || '',
+          regDate,
+        });
+      }
+    }
+  });
+
+  return ContentService
+    .createTextOutput(JSON.stringify(allData))
+    .setMimeType(ContentService.MimeType.JSON);
+}
