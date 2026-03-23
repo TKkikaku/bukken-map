@@ -776,9 +776,13 @@
     // ─── 紹介元ボタン生成 ───
     function buildSourceButtons(category) {
       const container = document.getElementById('sourceFilterContainer');
+      const categoryData = fullData.filter(d => d.sheet === category);
+      console.log('[source] category:', category, '件数:', categoryData.length);
+      console.log('[source] sourceサンプル:', categoryData.slice(0, 5).map(d => ({ name: d.name, source: d.source, keys: Object.keys(d) })));
       const sources = [...new Set(
-        fullData.filter(d => d.sheet === category && d.source).map(d => d.source)
+        categoryData.filter(d => d.source).map(d => d.source)
       )].sort();
+      console.log('[source] sources:', sources);
 
       if (sources.length === 0) { container.classList.add('hidden'); return; }
 
