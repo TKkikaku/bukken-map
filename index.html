@@ -246,31 +246,21 @@
     .price-field { display: flex; flex-direction: column; gap: 3px; }
     .price-field-label { font-size: 10px; font-weight: 700; color: var(--primary); letter-spacing: 0.04em; text-align: center; }
 
-    /* トグルスイッチ */
-    .toggle-wrap {
-      display: flex; align-items: center; gap: 8px;
-      cursor: pointer; user-select: none;
+    /* 成約済みセグメントボタン */
+    .segment-group {
+      display: flex; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); overflow: hidden;
     }
-    .toggle-switch {
-      position: relative; width: 36px; height: 20px;
+    .segment-btn {
+      flex: 1; padding: 6px 8px;
+      font-size: 12px; font-weight: 500; color: var(--text-sub);
+      background: var(--white); border: none; border-right: 1.5px solid var(--border);
+      cursor: pointer; white-space: nowrap;
+      transition: all 0.15s;
     }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-track {
-      position: absolute; inset: 0;
-      background: #d1d5db; border-radius: 20px;
-      transition: background 0.2s;
-    }
-    .toggle-thumb {
-      position: absolute;
-      top: 3px; left: 3px;
-      width: 14px; height: 14px;
-      background: white; border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-    }
-    .toggle-switch input:checked ~ .toggle-track { background: var(--primary); }
-    .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(16px); }
-    .toggle-label { font-size: 13px; font-weight: 500; color: var(--text); }
+    .segment-btn:last-child { border-right: none; }
+    .segment-btn:hover { background: var(--primary-light); color: var(--primary); }
+    .segment-btn.active { background: var(--primary); color: var(--white); font-weight: 600; }
 
     #resetBtn {
       display: flex; align-items: center; gap: 4px;
@@ -500,14 +490,11 @@
       </div>
       <div class="filter-group">
         <div class="filter-controls" style="justify-content: space-between;">
-          <label class="toggle-wrap">
-            <div class="toggle-switch">
-              <input type="checkbox" id="excludeContracted">
-              <div class="toggle-track"></div>
-              <div class="toggle-thumb"></div>
-            </div>
-            <span class="toggle-label">成約済みを除外</span>
-          </label>
+          <div class="segment-group" id="contractedFilter">
+            <button class="segment-btn active" data-val="all">すべて</button>
+            <button class="segment-btn" data-val="exclude">成約済みを除外</button>
+            <button class="segment-btn" data-val="only">成約済みのみ</button>
+          </div>
           <button id="resetBtn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.45"/></svg>
             リセット
@@ -608,14 +595,20 @@
     ['priceMin', 'priceMax', 'keywordInput'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderMarkers);
     });
-    document.getElementById('excludeContracted').addEventListener('change', renderMarkers);
+    document.getElementById('contractedFilter').addEventListener('click', e => {
+      const btn = e.target.closest('.segment-btn');
+      if (!btn) return;
+      document.querySelectorAll('#contractedFilter .segment-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderMarkers();
+    });
 
     // ─── リセット ───
     document.getElementById('resetBtn').addEventListener('click', () => {
       document.getElementById('priceMin').value             = '';
       document.getElementById('priceMax').value             = '';
       document.getElementById('keywordInput').value         = '';
-      document.getElementById('excludeContracted').checked  = false;
+      document.querySelectorAll('#contractedFilter .segment-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
       document.getElementById('categoryFilter').value       = '';
       currentCategory = ''; currentCity = ''; currentSource = '';
       document.getElementById('cityFilterContainer').classList.add('hidden');
@@ -823,13 +816,14 @@
       const pMin = pMinVal !== '' ? parseFloat(pMinVal) : 0;
       const pMax = pMaxVal !== '' ? parseFloat(pMaxVal) : Infinity;
       const kw   = (document.getElementById('keywordInput').value || '').trim().toLowerCase();
-      const exContracted = document.getElementById('excludeContracted').checked;
+      const contractedVal = document.querySelector('#contractedFilter .segment-btn.active')?.dataset.val ?? 'all';
 
       const filtered = fullData.filter(item => {
         if (item.sheet !== currentCategory) return false;
         if (currentCity && item.city !== currentCity) return false;
         if (currentSource && item.source !== currentSource) return false;
-        if (exContracted && item.status && item.status.trim() === '成約済み') return false;
+        if (contractedVal === 'exclude' && item.status && item.status.trim() === '成約済み') return false;
+        if (contractedVal === 'only' && (!item.status || item.status.trim() !== '成約済み')) return false;
         if (kw) {
           const hay = [item.name, item.note, item.source, item.city].join(' ').toLowerCase();
           if (!hay.includes(kw)) return false;
