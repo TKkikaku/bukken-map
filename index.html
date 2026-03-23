@@ -896,6 +896,10 @@ if (price === null || price < pMin || price > pMax) return false;
           if (currentInfoWindow) currentInfoWindow.close();
           infowindow.open({ anchor: marker, map });
           currentInfoWindow = infowindow;
+          map.panTo(marker.getPosition());
+          google.maps.event.addListenerOnce(map, 'idle', () => {
+            map.panBy(0, -160);
+          });
         });
         allMarkers.push(marker);
       });
