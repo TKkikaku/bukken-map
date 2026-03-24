@@ -485,6 +485,20 @@
         </div>
       </div>
       <div class="filter-group">
+        <div class="filter-group-label">坪数</div>
+        <div class="filter-controls">
+          <div class="price-field">
+            <input type="number" class="filter-input" id="tsuboMin" placeholder="0" min="0">
+            <span class="price-field-label">坪 以上</span>
+          </div>
+          <span class="filter-sep">〜</span>
+          <div class="price-field">
+            <input type="number" class="filter-input" id="tsuboMax" placeholder="上限なし" min="0">
+            <span class="price-field-label">坪 以下</span>
+          </div>
+        </div>
+      </div>
+      <div class="filter-group">
         <div class="filter-group-label">キーワード</div>
         <div class="filter-controls">
           <input type="text" class="filter-text-input" id="keywordInput" placeholder="物件名・備考・紹介元で検索">
@@ -594,7 +608,7 @@
     });
 
     // ─── 詳細フィルター変更 ───
-    ['priceMin', 'priceMax', 'keywordInput'].forEach(id => {
+    ['priceMin', 'priceMax', 'tsuboMin', 'tsuboMax', 'keywordInput'].forEach(id => {
       document.getElementById(id).addEventListener('input', renderMarkers);
     });
     document.getElementById('contractedFilter').addEventListener('click', e => {
@@ -609,6 +623,8 @@
     document.getElementById('resetBtn').addEventListener('click', () => {
       document.getElementById('priceMin').value             = '';
       document.getElementById('priceMax').value             = '';
+      document.getElementById('tsuboMin').value             = '';
+      document.getElementById('tsuboMax').value             = '';
       document.getElementById('keywordInput').value         = '';
       document.querySelectorAll('#contractedFilter .segment-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
       document.getElementById('categoryFilter').value       = '';
@@ -854,6 +870,10 @@
       const pMaxVal = document.getElementById('priceMax').value;
       const pMin = pMinVal !== '' ? parseFloat(pMinVal) : 0;
       const pMax = pMaxVal !== '' ? parseFloat(pMaxVal) : Infinity;
+      const tMinVal = document.getElementById('tsuboMin').value;
+      const tMaxVal = document.getElementById('tsuboMax').value;
+      const tMin = tMinVal !== '' ? parseFloat(tMinVal) : 0;
+      const tMax = tMaxVal !== '' ? parseFloat(tMaxVal) : Infinity;
       const kw   = (document.getElementById('keywordInput').value || '').trim().toLowerCase();
       const contractedVal = document.querySelector('#contractedFilter .segment-btn.active')?.dataset.val ?? 'all';
 
@@ -869,7 +889,11 @@
         }
         if (item.sheet !== '名刺' && (pMin > 0 || pMax < Infinity)) {
           const price = parsePrice(item.price);
-if (price === null || price < pMin || price > pMax) return false;
+          if (price === null || price < pMin || price > pMax) return false;
+        }
+        if (item.sheet !== '名刺' && (tMin > 0 || tMax < Infinity)) {
+          const tsubo = parseFloat(item.tsubo);
+          if (isNaN(tsubo) || tsubo < tMin || tsubo > tMax) return false;
         }
         return true;
       });

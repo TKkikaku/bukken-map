@@ -51,6 +51,7 @@ function doGet(e) {
           note:    row[9]  || '',
           status:  row[10] || '',
           regDate,
+          tsubo:   row[12] || '',
         });
       }
     }
