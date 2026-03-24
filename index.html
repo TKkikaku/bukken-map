@@ -713,6 +713,9 @@
           { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] }
         ]
       });
+      map.addListener('click', () => {
+        if (currentInfoWindow) { currentInfoWindow.close(); currentInfoWindow = null; }
+      });
       const loader = document.getElementById('dataLoader');
       loader.classList.add('visible');
       try {
