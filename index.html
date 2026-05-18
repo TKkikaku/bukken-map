@@ -735,9 +735,13 @@
       const loader = document.getElementById('dataLoader');
       loader.classList.add('visible');
       try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbwuYJQ7Oxjh0cyDDjmoEjFBhSbmUSZ1cO7uw0ONdnWojfQD36L8IVrMAa8O07haB2_Yqw/exec');
+        const GAS_TOKEN = '674232250b1cfadc78c288c761bed78a0138d138c2eebabc53a9095251896fac';
+        const gasUrl = 'https://script.google.com/macros/s/AKfycbwuYJQ7Oxjh0cyDDjmoEjFBhSbmUSZ1cO7uw0ONdnWojfQD36L8IVrMAa8O07haB2_Yqw/exec?token=' + encodeURIComponent(GAS_TOKEN);
+        const res = await fetch(gasUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        fullData = await res.json();
+        const json = await res.json();
+        if (json && json.error) throw new Error(`GAS auth: ${json.error}`);
+        fullData = json;
         // GAS側の二重ループバグ対策：同一エントリの重複を除去
         const _seen = new Set();
         fullData = fullData.filter(d => {

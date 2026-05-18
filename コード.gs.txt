@@ -1,4 +1,12 @@
 function doGet(e) {
+  const EXPECTED_TOKEN = '674232250b1cfadc78c288c761bed78a0138d138c2eebabc53a9095251896fac';
+  const token = (e && e.parameter && e.parameter.token) || '';
+  if (token !== EXPECTED_TOKEN) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: 'unauthorized' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const ss = SpreadsheetApp.openById('1HBt9l7Z4Q4PekvNUrPd8tUopRy0JFO27epT-tgsxqU0');
   const sheets = ss.getSheets();
   const allData = [];
